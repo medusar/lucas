@@ -22,6 +22,7 @@ type RedisConn struct {
 	buf       []byte
 	limit     int
 	readIndex int
+	closed    bool
 }
 
 func NewRedisConn(con net.Conn) *RedisConn {
@@ -220,6 +221,13 @@ func (r *RedisConn) WriteBulk(val string) error {
 	return r.WriteBytes(b)
 }
 
+func (r *RedisConn) WriteError(val string) error {
+	b := []byte("-")
+	b = append(b, []byte(val)...)
+	b = append(b, Delimiter...)
+	return r.WriteBytes(b)
+}
+
 func (r *RedisConn) WriteArray(val []*Resp) error {
 	b := []byte("*")
 	b = append(b, []byte(strconv.Itoa(len(val)))...)
@@ -270,4 +278,18 @@ func (r *RedisConn) WriteArray(val []*Resp) error {
 		}
 	}
 	return nil
+}
+
+func (r *RedisConn) Close() {
+	r.closed = true
+	r.con.Close()
+}
+
+func (r *RedisConn) IsClosed() bool {
+	return r.closed
+}
+
+func (r *RedisConn) WriteNil() error {
+	b := []byte("$-1\r\n")
+	return r.WriteBytes(b)
 }

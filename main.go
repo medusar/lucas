@@ -14,6 +14,9 @@ func main() {
 	}
 	defer l.Close()
 
+	//start server
+	go cmd.LoopAndInvoke()
+
 	for {
 		con, err := l.Accept()
 		if err != nil {
@@ -37,11 +40,9 @@ func serve(con net.Conn) {
 			log.Println(err)
 			break
 		}
-
 		log.Println(redisCmd)
 
-		//TODO: execute command
-		err = r.WriteString("OK")
+		err = cmd.Execute(r, redisCmd)
 		if err != nil {
 			log.Println("Failecd to write", err)
 			break
