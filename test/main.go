@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"reflect"
 	"strconv"
 )
@@ -32,4 +33,6 @@ func main() {
 
 
 	fmt.Println(len("哈哈大家好"))
+
+	fmt.Println(math.MaxFloat64)
 }

@@ -9,6 +9,7 @@ import (
 const (
 	//Redis Strings are limited to 512 megabytes
 	MaxStringLength = 2 ^ 29 - 1
+	//TODO:check string size
 )
 
 type stringVal struct {
@@ -55,7 +56,7 @@ func Get(key string) (string, bool, error) {
 			}
 			return sv.val, true, nil
 		} else {
-			return "", false, fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
+			return "", false, errorWrongType
 		}
 	} else {
 		return "", false, nil
@@ -126,14 +127,14 @@ func IncrBy(key string, intV int) (int, error) {
 
 		i, e := strconv.Atoi(sv.val)
 		if e != nil {
-			return -1, fmt.Errorf("ERR value is not an integer or out of range")
+			return -1, errorInvalidInt
 		}
 
 		i = i + intV
 		sv.val = strconv.Itoa(i)
 		return i, nil
 	} else {
-		return -1, fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
+		return -1, errorWrongType
 	}
 }
 
@@ -148,7 +149,7 @@ func Append(key, val string) (int, error) {
 	}
 	s, ok := v.(*stringVal)
 	if !ok {
-		return -1, fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
+		return -1, errorWrongType
 	}
 	s.val = s.val + val
 	return len(s.val), nil
@@ -172,7 +173,7 @@ func SetRange(key, val string, offset int) (int, error) {
 
 	s, ok := v.(*stringVal)
 	if !ok {
-		return -1, fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
+		return -1, errorWrongType
 	}
 
 	var rs []byte

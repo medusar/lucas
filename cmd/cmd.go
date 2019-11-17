@@ -73,10 +73,19 @@ var commandFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 func init() {
+	cmdFuncMap["command"] = commandFunc
+
+	//keys
+	cmdFuncMap["ttl"] = ttlFunc
+	cmdFuncMap["expire"] = expireFunc
+	cmdFuncMap["keys"] = keysFunc
+	cmdFuncMap["exists"] = existsFunc
+	cmdFuncMap["del"] = delFunc
+	cmdFuncMap["type"] = typeFunc
+
+	//string
 	cmdFuncMap["get"] = getFunc
 	cmdFuncMap["set"] = setFunc
-	cmdFuncMap["command"] = commandFunc
-	cmdFuncMap["ttl"] = ttlFunc
 	cmdFuncMap["getset"] = getsetFunc
 	cmdFuncMap["setex"] = setexFunc
 	cmdFuncMap["setnx"] = setnxFunc
@@ -87,14 +96,29 @@ func init() {
 	cmdFuncMap["incrby"] = incrByFunc
 	cmdFuncMap["decr"] = decrFun
 	cmdFuncMap["decrby"] = decrByFunc
-	cmdFuncMap["expire"] = expireFunc
-	cmdFuncMap["keys"] = keysFunc
-	cmdFuncMap["exists"] = existsFunc
-	cmdFuncMap["del"] = delFunc
 	cmdFuncMap["append"] = appendFunc
 	cmdFuncMap["setrange"] = setRangeFunc
 	cmdFuncMap["getrange"] = getRangeFunc
-	cmdFuncMap["type"] = typeFunc
+
+	//hash
+	cmdFuncMap["hset"] = hsetFunc
+	cmdFuncMap["hget"] = hgetFunc
+	cmdFuncMap["hgetall"] = hgetAllFunc
+	cmdFuncMap["hkeys"] = hkeysFunc
+	cmdFuncMap["hlen"] = hlenFunc
+	cmdFuncMap["hexists"] = hexistsFunc
+	cmdFuncMap["hdel"] = hdelFunc
+	cmdFuncMap["hmget"] = hmgetFunc
+	cmdFuncMap["hmset"] = hmsetFunc
+	cmdFuncMap["hsetnx"] = hsetnxFunc
+	cmdFuncMap["hstrlen"] = hstrlenFunc
+	cmdFuncMap["hvals"] = hvalsFunc
+	cmdFuncMap["hincrby"] = hincrByFunc
+	cmdFuncMap["hincrbyfloat"] = hincrByFloatFunc
+	//HSCAN
+	//cmdFuncMap["hscan"] = hcanFunc
+
+	//set
 
 	keys := make([]string, 0)
 	for key, _ := range cmdFuncMap {
