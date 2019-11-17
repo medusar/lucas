@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	values          = make(map[string]expired)
-	errorWrongType  = fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
-	errorInvalidInt = fmt.Errorf("ERR value is not an integer or out of range")
+	values            = make(map[string]expired)
+	errorWrongType    = fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
+	errorInvalidInt   = fmt.Errorf("ERR value is not an integer or out of range")
 	errorInvalidFloat = fmt.Errorf("ERR value is not a valid float")
 )
 

@@ -119,6 +119,12 @@ func init() {
 	//cmdFuncMap["hscan"] = hcanFunc
 
 	//set
+	cmdFuncMap["sadd"] = saddFunc
+	cmdFuncMap["scard"] = scardFunc
+	cmdFuncMap["sdiff"] = sdiffFunc
+	cmdFuncMap["smembers"] = smembersFunc
+	cmdFuncMap["sismember"] = sismemberFunc
+	cmdFuncMap["spop"] = spopFunc
 
 	keys := make([]string, 0)
 	for key, _ := range cmdFuncMap {
@@ -186,4 +192,12 @@ func execCmd(r *protocol.RedisConn, c *RedisCmd) error {
 		return r.WriteError(buf.String())
 	}
 	return f(c.Args, r)
+}
+
+func toBulkArray(val []string) []*protocol.Resp {
+	r := make([]*protocol.Resp, len(val))
+	for i := 0; i < len(val); i++ {
+		r[i] = protocol.NewBulk(val[i])
+	}
+	return r
 }
