@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"strconv"
@@ -25,7 +26,10 @@ func main() {
 
 	s, e := strconv.Unquote("*")
 	if e != nil {
-		log.Fatal(e)
+		log.Println(e)
 	}
 	log.Println("after unquote:", s)
+
+
+	fmt.Println(len("哈哈大家好"))
 }
