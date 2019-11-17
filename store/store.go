@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	values map[string]expired = make(map[string]expired)
+	values = make(map[string]expired)
 )
 
 type expired interface {
