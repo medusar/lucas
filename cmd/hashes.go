@@ -7,7 +7,7 @@ import (
 
 // https://redis.io/commands/hset
 var hsetFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) < 3 || len(args)%2 != 1 {
+	if len(args) < 3 || len(args)%2 != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hset' command")
 	}
 	added := 0
@@ -26,7 +26,7 @@ var hsetFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hget
 var hgetFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hget' command")
 	}
 	key, field := args[0], args[1]
@@ -43,7 +43,7 @@ var hgetFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hgetall
 var hgetAllFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hgetall' command")
 	}
 	m, err := store.Hgetall(args[0])
@@ -59,7 +59,7 @@ var hgetAllFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hkeys
 var hkeysFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hkeys' command")
 	}
 	keys, err := store.Hkeys(args[0])
@@ -75,7 +75,7 @@ var hkeysFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hlen
 var hlenFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hlen' command")
 	}
 	l, err := store.Hlen(args[0])
@@ -87,7 +87,7 @@ var hlenFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hexists
 var hexistsFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hexists' command")
 	}
 	l, err := store.Hexists(args[0], args[1])
@@ -99,7 +99,7 @@ var hexistsFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hdel
 var hdelFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) < 2 {
+	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hdel' command")
 	}
 	total, err := store.Hdel(args[0], args[1:])
@@ -111,7 +111,7 @@ var hdelFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hmget
 var hmgetFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) < 2 {
+	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hmget' command")
 	}
 	ret := make([]*protocol.Resp, 0)
@@ -136,7 +136,7 @@ var hmsetFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hsetnx
 var hsetnxFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hsetnx' command")
 	}
 	l, err := store.HsetNX(args[0], args[1], args[2])
@@ -148,7 +148,7 @@ var hsetnxFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hstrlen
 var hstrlenFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hstrlen' command")
 	}
 	l, err := store.HstrLen(args[0], args[1])
@@ -160,7 +160,7 @@ var hstrlenFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hvals
 var hvalsFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hvals' command")
 	}
 	vals, err := store.Hvals(args[0])
@@ -176,7 +176,7 @@ var hvalsFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hincrby
 var hincrByFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hincrby' command")
 	}
 	v, err := store.HincrBy(args[0], args[1], args[2])
@@ -188,7 +188,7 @@ var hincrByFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/hincrbyfloat
 var hincrByFloatFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hincrbyfloat' command")
 	}
 	v, err := store.HincrByFloat(args[0], args[1], args[2])

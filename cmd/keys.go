@@ -8,7 +8,7 @@ import (
 
 var ttlFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'ttl' command")
 		return err
 	}
@@ -17,7 +17,7 @@ var ttlFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var expireFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'expire' command")
 	}
 	sec, err := strconv.Atoi(args[1])
@@ -33,7 +33,7 @@ var expireFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'expire' command")
 	}
 
@@ -51,7 +51,7 @@ var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var keysFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'keys' command")
 	}
 	keys := store.Keys(args[0])
@@ -67,7 +67,7 @@ var keysFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var existsFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) == 0 {
+	if len(args) == 0 {
 		return r.WriteError("ERR wrong number of arguments for 'exists' command")
 	}
 	total := 0
@@ -82,7 +82,7 @@ var existsFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var delFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) == 0 {
+	if len(args) == 0 {
 		return r.WriteError("ERR wrong number of arguments for 'del' command")
 	}
 	total := 0
@@ -95,7 +95,7 @@ var delFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var typeFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'type' command")
 	}
 	t := store.Type(args[0])

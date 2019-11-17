@@ -8,7 +8,7 @@ import (
 
 var getFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'get' command")
 		return err
 	}
@@ -25,7 +25,7 @@ var getFunc = func(args []string, r *protocol.RedisConn) error {
 
 var setFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		err = r.WriteError("ERR wrong number of arguments for 'set' command")
 		return err
 	}
@@ -36,7 +36,7 @@ var setFunc = func(args []string, r *protocol.RedisConn) error {
 }
 var getsetFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		err = r.WriteError("ERR wrong number of arguments for 'getset' command")
 		return err
 	}
@@ -53,7 +53,7 @@ var getsetFunc = func(args []string, r *protocol.RedisConn) error {
 
 var setexFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		err = r.WriteError("ERR wrong number of arguments for 'setex' command")
 		return err
 	}
@@ -75,7 +75,7 @@ var setexFunc = func(args []string, r *protocol.RedisConn) error {
 
 var setnxFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		err = r.WriteError("ERR wrong number of arguments for 'setnx' command")
 		return err
 	}
@@ -89,7 +89,7 @@ var setnxFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var setRangeFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'setrange' command")
 	}
 	key, offset, val := args[0], args[1], args[2]
@@ -106,7 +106,7 @@ var setRangeFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var getRangeFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 3 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'getrange' command")
 	}
 	key, start, end := args[0], args[1], args[2]
@@ -126,7 +126,7 @@ var getRangeFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var appendFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'append' command")
 	}
 	l, e := store.Append(args[0], args[1])
@@ -139,7 +139,7 @@ var appendFunc = func(args []string, r *protocol.RedisConn) error {
 
 var mgetFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) == 0 {
+	if len(args) == 0 {
 		err = r.WriteError("ERR wrong number of arguments for 'mget' command")
 		return err
 	}
@@ -157,7 +157,7 @@ var mgetFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 var msetFunc = func(args []string, r *protocol.RedisConn) error {
-	if args == nil || len(args) == 0 || len(args)%2 != 0 {
+	if len(args) == 0 || len(args)%2 != 0 {
 		return r.WriteError("ERR wrong number of arguments for 'mset' command")
 	}
 
@@ -171,7 +171,7 @@ var msetFunc = func(args []string, r *protocol.RedisConn) error {
 
 var strlenFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'strlen' command")
 		return err
 	}
@@ -186,7 +186,7 @@ var strlenFunc = func(args []string, r *protocol.RedisConn) error {
 
 var incrFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'incr' command")
 		return err
 	}
@@ -201,7 +201,7 @@ var incrFunc = func(args []string, r *protocol.RedisConn) error {
 
 var incrByFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		err = r.WriteError("ERR wrong number of arguments for 'incrby' command")
 		return err
 	}
@@ -224,7 +224,7 @@ var incrByFunc = func(args []string, r *protocol.RedisConn) error {
 
 var decrFun = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 1 {
+	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'decr' command")
 		return err
 	}
@@ -239,7 +239,7 @@ var decrFun = func(args []string, r *protocol.RedisConn) error {
 
 var decrByFunc = func(args []string, r *protocol.RedisConn) error {
 	var err error
-	if args == nil || len(args) != 2 {
+	if len(args) != 2 {
 		err = r.WriteError("ERR wrong number of arguments for 'decrby' command")
 		return err
 	}
