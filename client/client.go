@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/medusar/lucas/protocol"
 	"net"
 	"strconv"
@@ -15,14 +16,12 @@ func NewRedisCli(con net.Conn) *RedisCli {
 	return &RedisCli{RedisConn: protocol.NewRedisConn(con)}
 }
 
-//WriteCommand write redis commands to server, commands are in one line, separated by space
-func (r *RedisCli) WriteCommand(cmd string) error {
-	fields := strings.Fields(cmd)
-	return r.WriteCommandArray(fields)
-}
-
 //WriteCommandArray write redis commands to server, different parts of a single command are in an array
 func (r *RedisCli) WriteCommandArray(cmd []string) error {
+	if cmd == nil || len(cmd) == 0 {
+		return nil
+	}
+
 	data := make([][]byte, 0)
 	data = append(data, []byte("*"))
 	data = append(data, []byte(strconv.Itoa(len(cmd))))
@@ -36,4 +35,28 @@ func (r *RedisCli) WriteCommandArray(cmd []string) error {
 		data = append(data, []byte("\r\n"))
 	}
 	return r.Write(data)
+}
+
+func ParseClientCmd(c string) ([]string, error) {
+	fields := strings.Fields(c)
+	for i := range fields {
+		if f, err := unquote(fields[i]); err == nil {
+			fields[i] = f
+		} else {
+			return nil, fmt.Errorf("invalid argument(s)")
+		}
+	}
+	return fields, nil
+}
+
+//https://github.com/antirez/redis/blob/0f026af185e918a9773148f6ceaa1b084662be88/src/sds.c#L959
+func unquote(s string) (string, error) {
+	//TODO:
+	//rs := []rune(s)
+	//inQuote := false
+	//inSingleQuote := false
+	//for i := 0; i < len(rs); i++ {
+	//
+	//}
+	return s, nil
 }

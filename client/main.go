@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
+	"github.com/medusar/lucas/protocol"
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -41,7 +44,7 @@ func interactiveExec(address string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(r)
+			outputReply(r)
 		}
 	}()
 	reader := bufio.NewReader(os.Stdin)
@@ -51,7 +54,12 @@ func interactiveExec(address string) {
 			log.Fatal(err)
 		}
 		line = strings.Replace(line, "\n", "", -1)
-		err = con.WriteCommand(line)
+		cs, err := ParseClientCmd(line)
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		err = con.WriteCommandArray(cs)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -73,5 +81,37 @@ func exeCmd(address string, cmd []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(r)
+	outputReply(r)
+}
+
+func outputReply(rep interface{}) {
+	fmt.Println(toString(rep))
+}
+
+func toString(rep interface{}) string {
+	switch rep.(type) {
+	case string:
+		return strconv.Quote(rep.(string))
+	case int:
+		return strconv.Itoa(rep.(int))
+	case *protocol.Resp:
+		resp := rep.(*protocol.Resp)
+		if resp.Nil {
+			return "(nil)"
+		} else {
+			return toString(resp.Val)
+		}
+	case []interface{}:
+		array := rep.([]interface{})
+		if array == nil || len(array) == 0 {
+			return "(empty list or set)"
+		}
+		var buffer bytes.Buffer
+		for i, v := range array {
+			buffer.WriteString(fmt.Sprintf("%d) %s\r\n", i, toString(v)))
+		}
+		return buffer.String()
+	default:
+		return fmt.Sprintf("%v", rep)
+	}
 }

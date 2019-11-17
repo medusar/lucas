@@ -13,6 +13,30 @@ var (
 type Resp struct {
 	Type byte
 	Val  interface{}
+	Nil  bool
+}
+
+func (resp *Resp) String() string {
+	if resp.Nil {
+		return "nil"
+	}
+	if s, ok := resp.Val.(fmt.Stringer); ok {
+		return s.String()
+	} else {
+		return fmt.Sprintf("%v", resp.Val)
+	}
+}
+
+func NewNil() *Resp {
+	return &Resp{Type: '$', Nil: true}
+}
+
+func NewBulk(val string) *Resp {
+	return &Resp{Type: '$', Val: val, Nil: false}
+}
+
+func NewString(val string) *Resp {
+	return &Resp{Type: '+', Val: val, Nil: false}
 }
 
 //RedisConn represents a connection establish between client and server
@@ -116,31 +140,32 @@ func (r *RedisConn) ReadInt() (int, error) {
 }
 
 //ReadBulkString read the bulk string
-func (r *RedisConn) ReadBulk() (string, error) {
+func (r *RedisConn) ReadBulk() (*Resp, error) {
 	n, err := r.ReadInt()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if n == -1 {
-		return "nil", nil
+		return &Resp{Type: '$', Nil: true}, nil
 	}
 
 	bs := make([]byte, 0)
 	for i := 0; i < n; i++ {
 		b, err := r.ReadByte()
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		bs = append(bs, b)
 	}
 	//CRLF
 	for i := 0; i < 2; i++ {
 		if _, err := r.ReadByte(); err != nil {
-			return "", err
+			return nil, err
 		}
 	}
-	return string(bs), nil
+
+	return &Resp{Type: '$', Val: string(bs), Nil: false}, nil
 }
 
 //ReadArray read an array of data from the underlying connection
@@ -185,7 +210,7 @@ func (r *RedisConn) ReadReply() (interface{}, error) {
 }
 
 //ReadRequest read commands sent from a client
-func (r *RedisConn) ReadRequest() ([]interface{}, error) {
+func (r *RedisConn) ReadRequest() ([]string, error) {
 	b, err := r.ReadByte()
 	if err != nil {
 		return nil, err
@@ -194,7 +219,38 @@ func (r *RedisConn) ReadRequest() ([]interface{}, error) {
 		return nil, fmt.Errorf("illegal request, type:%c", b)
 	}
 
-	return r.ReadArray()
+	n, err := r.ReadInt()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]string, 0)
+	for i := 0; i < n; i++ {
+		b, err := r.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+
+		if b != '$' {
+			return nil, fmt.Errorf("illegal request, type:%c", b)
+		}
+
+		rp, err := r.ReadBulk()
+		if err != nil {
+			return nil, err
+		}
+		//request should not contain 'nil'
+		if rp.Nil == true {
+			return nil, fmt.Errorf("illegal request, should not contain nil")
+		}
+		v, ok := rp.Val.(string)
+		if !ok {
+			return nil, fmt.Errorf("illegal request, bulk is not string")
+		}
+		ret = append(ret, v)
+	}
+
+	return ret, nil
 }
 
 func (r *RedisConn) WriteString(val string) error {
@@ -259,7 +315,9 @@ func (r *RedisConn) WriteArray(val []*Resp) error {
 				return fmt.Errorf("illegal simple integer type")
 			}
 		case '$':
-			if s, ok := v.Val.(string); ok {
+			if v.Nil {
+				err = r.WriteNil()
+			} else if s, ok := v.Val.(string); ok {
 				err = r.WriteBulk(s)
 			} else {
 				return fmt.Errorf("illegal simple bulk string type")
