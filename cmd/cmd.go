@@ -122,9 +122,16 @@ func init() {
 	cmdFuncMap["sadd"] = saddFunc
 	cmdFuncMap["scard"] = scardFunc
 	cmdFuncMap["sdiff"] = sdiffFunc
-	cmdFuncMap["smembers"] = smembersFunc
+	cmdFuncMap["sdiffstore"] = sdiffStoreFunc
+	cmdFuncMap["sinter"] = sinterFunc
+	cmdFuncMap["sinterstore"] = sinterStoreFunc
 	cmdFuncMap["sismember"] = sismemberFunc
+	cmdFuncMap["smembers"] = smembersFunc
+	cmdFuncMap["smove"] = smoveFunc
 	cmdFuncMap["spop"] = spopFunc
+	cmdFuncMap["srem"] = sremFunc
+	cmdFuncMap["sunion"] = sunionFunc
+	cmdFuncMap["sunionstore"] = sunionStoreFunc
 
 	keys := make([]string, 0)
 	for key, _ := range cmdFuncMap {

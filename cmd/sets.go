@@ -110,3 +110,127 @@ var spopFunc = func(args []string, r *protocol.RedisConn) error {
 		return r.WriteNil()
 	}
 }
+
+//https://redis.io/commands/sdiffstore
+var sdiffStoreFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 2 {
+		return r.WriteError("ERR wrong number of arguments for 'sdiffstore' command")
+	}
+
+	var n int
+	var err error
+
+	if len(args) == 2 {
+		n, err = store.SdiffStore(args[0], args[1])
+	} else {
+		n, err = store.SdiffStore(args[0], args[1], args[2:]...)
+	}
+
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/sinter
+var sinterFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 1 {
+		return r.WriteError("ERR wrong number of arguments for 'sinter' command")
+	}
+	if len(args) == 1 {
+		return smembersFunc(args, r)
+	}
+
+	set, err := store.Sinter(args[0], args[1:]...)
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	ret := make([]*protocol.Resp, len(set))
+	for i := 0; i < len(set); i++ {
+		ret[i] = protocol.NewBulk(set[i])
+	}
+	return r.WriteArray(ret)
+}
+
+//https://redis.io/commands/sinterstore
+var sinterStoreFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 2 {
+		return r.WriteError("ERR wrong number of arguments for 'sinterstore' command")
+	}
+
+	var n int
+	var err error
+
+	if len(args) == 2 {
+		n, err = store.SinterStore(args[0], args[1])
+	} else {
+		n, err = store.SinterStore(args[0], args[1], args[2:]...)
+	}
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/srem
+var sremFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 2 {
+		return r.WriteError("ERR wrong number of arguments for 'srem' command")
+	}
+	n, err := store.Srem(args[0], args[1:])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/sunion
+var sunionFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 1 {
+		return r.WriteError("ERR wrong number of arguments for 'sunion' command")
+	}
+	set, err := store.Sunion(args)
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	ret := make([]*protocol.Resp, len(set))
+	for i := 0; i < len(set); i++ {
+		ret[i] = protocol.NewBulk(set[i])
+	}
+	return r.WriteArray(ret)
+}
+
+//https://redis.io/commands/sunionstore
+var sunionStoreFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 2 {
+		return r.WriteError("ERR wrong number of arguments for 'sunionstore' command")
+	}
+
+	var n int
+	var err error
+
+	if len(args) == 2 {
+		n, err = store.SunionStore(args[0], args[1])
+	} else {
+		n, err = store.SunionStore(args[0], args[1], args[2:]...)
+	}
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/smove
+var smoveFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 3 {
+		return r.WriteError("ERR wrong number of arguments for 'smove' command")
+	}
+	n, err := store.Smove(args[0], args[1], args[2])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/srandmember
+//https://redis.io/commands/sscan

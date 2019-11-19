@@ -21,3 +21,13 @@ func DiffArray(a, b []string) []string {
 	}
 	return diff
 }
+
+func InterMapKeys(m1, m2 map[string]*struct{}) map[string]*struct{} {
+	r := make(map[string]*struct{})
+	for k1, v := range m1 {
+		if _, ok := m2[k1]; ok {
+			r[k1] = v
+		}
+	}
+	return r
+}

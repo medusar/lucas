@@ -35,4 +35,3 @@ func (s *zsetVal) setExpireAt(at int64) {
 func (s *zsetVal) dataType() string {
 	return "zset"
 }
-
