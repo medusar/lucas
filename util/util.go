@@ -3,13 +3,9 @@ package util
 import (
 	"errors"
 	"math"
-	"reflect"
 )
 
-//IsPointer checks if val is a pointer type
-func IsPointer(val interface{}) bool {
-	return reflect.ValueOf(val).Kind() == reflect.Ptr
-}
+var ErrOverFlow = errors.New("integer overflow")
 
 //DiffArray returns the elements in `a` that aren't in `b`.
 func DiffArray(a, b []string) []string {
@@ -25,18 +21,6 @@ func DiffArray(a, b []string) []string {
 	}
 	return diff
 }
-
-func InterMapKeys(m1, m2 map[string]*struct{}) map[string]*struct{} {
-	r := make(map[string]*struct{})
-	for k1, v := range m1 {
-		if _, ok := m2[k1]; ok {
-			r[k1] = v
-		}
-	}
-	return r
-}
-
-var ErrOverFlow = errors.New("integer overflow")
 
 //Add64 do add operation in int64, and return error if the result overflows int64
 //https://stackoverflow.com/questions/33641717/detect-signed-int-overflow-in-go
