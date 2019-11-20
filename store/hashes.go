@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"github.com/medusar/lucas/util"
 	"math"
 	"strconv"
 	"time"
@@ -245,8 +246,8 @@ func HincrBy(key, field, delta string) (int, error) {
 		return -1, fmt.Errorf("ERR hash value is not an integer")
 	}
 
-	newVal := old + incr
-	if newVal > math.MaxInt64 || newVal < math.MinInt64 {
+	newVal, err := util.Add64(old, incr)
+	if err != nil {
 		return -1, fmt.Errorf("ERR increment or decrement would overflow")
 	}
 

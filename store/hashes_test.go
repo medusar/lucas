@@ -2,7 +2,9 @@ package store
 
 import (
 	"github.com/stretchr/testify/assert"
+	"math"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -379,24 +381,32 @@ func TestHvals(t *testing.T) {
 }
 
 func TestHincrBy(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "s1")
+
 	type args struct {
 		key   string
 		field string
 		delta string
 	}
+	maxIntStr := strconv.Itoa(math.MaxInt64)
 	tests := []struct {
 		name    string
 		args    args
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"hinc1", args{"hash1", "f1", "1"}, 1, false},
+		{"hinc2", args{"hash1", "f1", "1"}, 2, false},
+		{"hinc3", args{"hash1", "f2", "-1000"}, -1000, false},
+		{"hinc4", args{"hash1", "f3", maxIntStr}, math.MaxInt64, false},
+		{"hinc5", args{"hash1", "f3", maxIntStr}, -1, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := HincrBy(tt.args.key, tt.args.field, tt.args.delta)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HincrBy() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HincrBy() error = %v, wantErr %v, name:%s", err, tt.wantErr, tt.name)
 				return
 			}
 			if got != tt.want {
@@ -407,6 +417,9 @@ func TestHincrBy(t *testing.T) {
 }
 
 func TestHincrByFloat(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "s1")
+
 	type args struct {
 		key   string
 		field string
@@ -418,7 +431,7 @@ func TestHincrByFloat(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		//TODO:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
