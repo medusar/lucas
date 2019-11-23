@@ -2,7 +2,6 @@ package store
 
 import (
 	"github.com/medusar/lucas/util"
-	"log"
 	"time"
 )
 
@@ -184,7 +183,6 @@ func (s *listVal) lrange(start, end int) []string {
 		return nil
 	}
 
-	log.Println("start", start, "end", end)
 	return s.val[start:end]
 }
 

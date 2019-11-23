@@ -518,6 +518,8 @@ func TestLrange(t *testing.T) {
 		{"8", args{"list", 10, 9}, nil, false},
 		{"9", args{"list", 8, 7}, nil, false},
 		{"10", args{"list", -7, -100}, nil, false},
+		{"error", args{"s1", -7, -100}, nil, true},
+		{"noexists", args{"noexists", -7, -100}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

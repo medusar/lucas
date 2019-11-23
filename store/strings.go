@@ -8,7 +8,7 @@ import (
 
 const (
 	//Redis Strings are limited to 512 megabytes
-	MaxStringLength = 2 ^ 29 - 1
+	MaxStringLength = 536870911
 	//TODO:check string size
 )
 
@@ -47,20 +47,27 @@ func (s *stringVal) dataType() string {
 	return "string"
 }
 
+func stringOf(key string) (*stringVal, error) {
+	v, ok := values[key]
+	if !ok || !v.isAlive() {
+		return nil, nil
+	}
+	str, ok := v.(*stringVal)
+	if !ok {
+		return nil, errorWrongType
+	}
+	return str, nil
+}
+
 func Get(key string) (string, bool, error) {
-	if v, ok := values[key]; ok {
-		if sv, ok := v.(*stringVal); ok {
-			if !sv.isAlive() {
-				delete(values, key)
-				return "", false, nil
-			}
-			return sv.val, true, nil
-		} else {
-			return "", false, errorWrongType
-		}
-	} else {
+	str, err := stringOf(key)
+	if err != nil {
+		return "", false, err
+	}
+	if str == nil {
 		return "", false, nil
 	}
+	return str.val, true, nil
 }
 
 func Set(key, val string) {
@@ -68,12 +75,16 @@ func Set(key, val string) {
 }
 
 func GetSet(key, val string) (string, bool, error) {
-	v, ok, err := Get(key)
+	str, err := stringOf(key)
 	if err != nil {
 		return "", false, err
 	}
-	Set(key, val)
-	return v, ok, nil
+	if str == nil {
+		return "", false, nil
+	}
+	old := str.val
+	str.val = val
+	return old, true, nil
 }
 
 func SetEX(key, val string, ttl int) error {
@@ -94,108 +105,98 @@ func SetNX(key, val string) bool {
 }
 
 func StrLen(key string) (int, error) {
-	v, ok, err := Get(key)
+	str, err := stringOf(key)
 	if err != nil {
 		return -1, err
 	}
-	if !ok {
+	if str == nil {
 		return 0, nil
 	}
-	return len(v), nil
+	return len(str.val), nil
 }
 
 func Incr(key string) (int, error) {
 	return IncrBy(key, 1)
 }
 
+//FIXME: "01234" can't be converted to in redis server.
 func IncrBy(key string, intV int) (int, error) {
-	v, ok := values[key]
-	if !ok {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if str == nil {
 		i := intV
-		v = &stringVal{val: strconv.Itoa(i), expireAt: -1}
-		values[key] = v
+		Set(key, strconv.Itoa(i))
 		return i, nil
 	}
 
-	if sv, ok := v.(*stringVal); ok {
-		if !sv.isAlive() {
-			i := intV
-			v = &stringVal{val: strconv.Itoa(i), expireAt: -1}
-			values[key] = v
-			return i, nil
-		}
-
-		i, e := strconv.Atoi(sv.val)
-		if e != nil {
-			return -1, errorInvalidInt
-		}
-
-		i = i + intV
-		sv.val = strconv.Itoa(i)
-		return i, nil
-	} else {
-		return -1, errorWrongType
+	i, e := strconv.Atoi(str.val)
+	if e != nil {
+		return -1, errorInvalidInt
 	}
+
+	i = i + intV
+	str.val = strconv.Itoa(i)
+	return i, nil
 }
 
 //If key already exists and is a string, this command appends the value at the end of the string.
 //If key does not exist it is created and set as an empty string,
 //so APPEND will be similar to SET in this special case.
 func Append(key, val string) (int, error) {
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if str == nil {
 		Set(key, val)
 		return len(val), nil
 	}
-	s, ok := v.(*stringVal)
-	if !ok {
-		return -1, errorWrongType
-	}
-	s.val = s.val + val
-	return len(s.val), nil
+	str.val = str.val + val
+	return len(str.val), nil
 }
 
 //offset means byte index, not rune index
 func SetRange(key, val string, offset int) (int, error) {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+
 	if offset+len(val) > MaxStringLength {
 		return -1, fmt.Errorf("ERR string exceeds maximum allowed size (512MB)")
 	}
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
+
+	if str == nil {
 		rs := make([]byte, offset+len(val))
-		bs := []byte(val)
 		for i := 0; i < len(val); i++ {
-			rs[i+offset] = bs[i]
+			rs[i+offset] = val[i]
 		}
 		Set(key, string(rs))
 		return len(rs), nil
 	}
 
-	s, ok := v.(*stringVal)
-	if !ok {
-		return -1, errorWrongType
-	}
-
 	var rs []byte
-	bs := []byte(s.val)
-	valbs := []byte(val)
 
-	if offset+len(valbs) > len(bs) {
-		rs = make([]byte, offset+len(valbs))
+	bs := []byte(str.val)
+	newLen := offset + len(val)
+
+	if newLen > len(bs) {
+		rs = make([]byte, newLen)
 		copy(rs, bs)
 	} else {
 		rs = bs
 	}
 
 	for i := 0; i < len(val); i++ {
-		rs[offset+i] = valbs[i]
+		rs[offset+i] = val[i]
 	}
-	s.val = string(rs)
-
+	str.val = string(rs)
 	return len(rs), nil
 }
 
-//Returns the substring of the string value stored at key,
+// GetRange returns the substring of the string value stored at key,
 // determined by the offsets start and end (both are inclusive).
 // Negative offsets can be used in order to provide an offset starting from the end of the string.
 // So -1 means the last character, -2 the penultimate and so forth.
@@ -209,8 +210,7 @@ func GetRange(key string, start, end int) (string, error) {
 	if !ok {
 		return "", nil
 	}
-	b := []byte(s)
-	l := len(b)
+	l := len(s)
 
 	//check negative
 	if start < 0 {
@@ -235,7 +235,5 @@ func GetRange(key string, start, end int) (string, error) {
 	if rl <= 0 {
 		return "", nil
 	}
-
-	rt := b[start : end+1]
-	return string(rt), nil
+	return s[start : end+1], nil
 }
