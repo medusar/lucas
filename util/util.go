@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-var ErrOverFlow = errors.New("integer overflow")
+var errOverFlow = errors.New("integer overflow")
 
 //DiffArray returns the elements in `a` that aren't in `b`.
 func DiffArray(a, b []string) []string {
@@ -27,11 +27,11 @@ func DiffArray(a, b []string) []string {
 func Add64(a, b int) (int, error) {
 	if a > 0 {
 		if b > math.MaxInt64-a {
-			return -1, ErrOverFlow
+			return -1, errOverFlow
 		}
 	} else {
 		if b < math.MinInt64-a {
-			return -1, ErrOverFlow
+			return -1, errOverFlow
 		}
 	}
 	return a + b, nil

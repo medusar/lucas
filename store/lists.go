@@ -45,9 +45,9 @@ func (s *listVal) dataType() string {
 	return "list"
 }
 
-func (s *listVal) lpush(eles []string) int {
+func (s *listVal) lpush(elements []string) int {
 	list := s.val
-	for _, e := range eles {
+	for _, e := range elements {
 		list = append(list, "")
 		copy(list[1:], list[:])
 		list[0] = e

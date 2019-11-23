@@ -77,9 +77,8 @@ var sismemberFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	if is {
 		return r.WriteInteger(1)
-	} else {
-		return r.WriteInteger(0)
 	}
+	return r.WriteInteger(0)
 }
 
 //https://redis.io/commands/spop
@@ -106,9 +105,8 @@ var spopFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	if removed != nil {
 		return r.WriteArray(toBulkArray(*removed))
-	} else {
-		return r.WriteNil()
 	}
+	return r.WriteNil()
 }
 
 //https://redis.io/commands/sdiffstore

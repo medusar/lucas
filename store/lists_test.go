@@ -25,8 +25,8 @@ func TestLpush(t *testing.T) {
 	}
 
 	type args struct {
-		key  string
-		eles []string
+		key      string
+		elements []string
 	}
 	tests := []struct {
 		name    string
@@ -42,7 +42,7 @@ func TestLpush(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Lpush(tt.args.key, tt.args.eles)
+			got, err := Lpush(tt.args.key, tt.args.elements)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Lpush() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -69,8 +69,8 @@ func TestRpush(t *testing.T) {
 	}
 
 	type args struct {
-		key  string
-		eles []string
+		key      string
+		elements []string
 	}
 	tests := []struct {
 		name    string
@@ -86,7 +86,7 @@ func TestRpush(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Rpush(tt.args.key, tt.args.eles)
+			got, err := Rpush(tt.args.key, tt.args.elements)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Rpush() error = %v, wantErr %v", err, tt.wantErr)
 				return
