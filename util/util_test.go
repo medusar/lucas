@@ -86,7 +86,7 @@ func TestDiffArray(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DiffArray(tt.args.a, tt.args.b);
+			got := DiffArray(tt.args.a, tt.args.b)
 			assert.ElementsMatch(t, got, tt.want, fmt.Sprintf("DiffArray() = %v, want %v", got, tt.want))
 		})
 	}

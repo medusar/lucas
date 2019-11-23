@@ -133,8 +133,21 @@ func init() {
 	cmdFuncMap["sunion"] = sunionFunc
 	cmdFuncMap["sunionstore"] = sunionStoreFunc
 
+	//list
+	cmdFuncMap["lpush"] = lpushFunc
+	cmdFuncMap["rpush"] = rpushFunc
+	cmdFuncMap["llen"] = llenFunc
+	cmdFuncMap["lpop"] = lpopFunc
+	cmdFuncMap["rpop"] = rpopFunc
+	cmdFuncMap["lindex"] = lindexFunc
+	cmdFuncMap["lrem"] = lremFunc
+	cmdFuncMap["lset"] = lsetFunc
+	cmdFuncMap["rpushx"] = rpushXFunc
+	cmdFuncMap["lpushx"] = lpushXFunc
+	cmdFuncMap["lrange"] = lrangeFunc
+
 	keys := make([]string, 0)
-	for key, _ := range cmdFuncMap {
+	for key := range cmdFuncMap {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)

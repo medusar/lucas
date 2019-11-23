@@ -96,7 +96,7 @@ func Hkeys(key string) ([]string, error) {
 	}
 	keys := make([]string, len(h.val))
 	i := 0
-	for k, _ := range h.val {
+	for k := range h.val {
 		keys[i] = k
 		i++
 	}

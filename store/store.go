@@ -1,17 +1,19 @@
 package store
 
 import (
-	"fmt"
+	"errors"
 	"github.com/mb0/glob"
 	"log"
 	"time"
 )
 
 var (
-	values            = make(map[string]expired)
-	errorWrongType    = fmt.Errorf("WRONGTYPE Operation against a key holding the wrong kind of value")
-	errorInvalidInt   = fmt.Errorf("ERR value is not an integer or out of range")
-	errorInvalidFloat = fmt.Errorf("ERR value is not a valid float")
+	values               = make(map[string]expired)
+	errorWrongType       = errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	errorInvalidInt      = errors.New("ERR value is not an integer or out of range")
+	errorInvalidFloat    = errors.New("ERR value is not a valid float")
+	errorNoSuchKey       = errors.New("ERR no such key")
+	errorIndexOutOfRange = errors.New("ERR index out of range")
 )
 
 type expired interface {

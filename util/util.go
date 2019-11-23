@@ -41,3 +41,12 @@ func Add64Float(a, b float64) (float64, error) {
 	//TODO: check float overflow
 	return a + b, nil
 }
+
+func DeleteStringArray(i int, array []string) []string {
+	if i < len(array)-1 {
+		copy(array[i:], array[i+1:])
+	}
+	array[len(array)-1] = ""
+	array = array[:len(array)-1]
+	return array
+}

@@ -183,7 +183,7 @@ func Smembers(key string) ([]string, error) {
 	}
 	ret := make([]string, len(s.val))
 	i := 0
-	for k, _ := range s.val {
+	for k := range s.val {
 		ret[i] = k
 		i++
 	}

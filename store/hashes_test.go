@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math"
 	"reflect"
@@ -401,6 +402,7 @@ func TestHincrBy(t *testing.T) {
 		{"hinc3", args{"hash1", "f2", "-1000"}, -1000, false},
 		{"hinc4", args{"hash1", "f3", maxIntStr}, math.MaxInt64, false},
 		{"hinc5", args{"hash1", "f3", maxIntStr}, -1, true},
+		{"hinc6", args{"s1", "f3", maxIntStr}, -1, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -420,6 +422,7 @@ func TestHincrByFloat(t *testing.T) {
 	values = make(map[string]expired)
 	Set("s1", "s1")
 
+	maxFloat := fmt.Sprintf("%f", math.MaxFloat64)
 	type args struct {
 		key   string
 		field string
@@ -431,17 +434,26 @@ func TestHincrByFloat(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		//TODO:
+		{"hinc1", args{"hash1", "f1", "1"}, "1", false},
+		{"hinc2", args{"hash1", "f1", "1.054"}, "2.054", false},
+		{"hinc3", args{"hash1", "f2", "-1000.9801"}, "-1000.9801", false},
+		{"hinc4", args{"s1", "f3", "1212"}, "", true},
+		{"hinc5", args{"hash1", "f3", maxFloat}, maxFloat, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := HincrByFloat(tt.args.key, tt.args.field, tt.args.delta)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("HincrByFloat() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("HincrByFloat() = %v, want %v", got, tt.want)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("HincrByFloat() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			} else {
+				real, _ := strconv.ParseFloat(got, 64)
+				want, _ := strconv.ParseFloat(tt.want, 64)
+				if real != want {
+					t.Errorf("HincrByFloat() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
