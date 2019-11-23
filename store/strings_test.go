@@ -1,7 +1,9 @@
 package store
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -19,36 +21,31 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    string
-		exists  bool
+		value   *string
 		wantErr bool
 	}{
-		{"1", args{"s1"}, s1, true, false},
-		{"2", args{"noexist"}, "", false, false},
-		{"3", args{"hash"}, "", false, true},
+		{"1", args{"s1"}, &s1, false},
+		{"2", args{"noexist"}, nil, false},
+		{"3", args{"hash"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := Get(tt.args.key)
+			got, err := Get(tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("Get() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.exists {
-				t.Errorf("Get() exists = %v, exists %v", got1, tt.exists)
+			if !reflect.DeepEqual(got, tt.value) {
+				t.Errorf("Get() got = %v, want %v", got, tt.value)
 			}
 		})
 	}
 
 	SetEX("s2", s1, 1)
 	time.AfterFunc(time.Second, func() {
-		s, exists, err := Get("s2")
+		s, err := Get("s2")
 		assert.Nil(t, err)
-		assert.False(t, exists)
-		assert.Equal(t, "", s)
+		assert.Nil(t, s)
 	})
 }
 
@@ -58,16 +55,16 @@ func TestSet(t *testing.T) {
 	s1 := "hello"
 	Set("s1", s1)
 
-	s, b, e := Get("s1")
+	s, e := Get("s1")
 	assert.Nil(t, e)
-	assert.True(t, b)
-	assert.Equal(t, s1, s)
+	assert.NotNil(t, s)
+	assert.Equal(t, s1, *s)
 
 	Set("hash", s1)
-	s, b, e = Get("hash")
+	s, e = Get("hash")
 	assert.Nil(t, e)
-	assert.True(t, b)
-	assert.Equal(t, s1, s)
+	assert.NotNil(t, s)
+	assert.Equal(t, s1, *s)
 }
 
 func TestGetSet(t *testing.T) {
@@ -79,14 +76,12 @@ func TestGetSet(t *testing.T) {
 	Set("s1", s1)
 
 	Set("s5", s1)
-	s, b, e := GetSet("s5", s2)
+	s, e := GetSet("s5", s2)
 	assert.Nil(t, e)
-	assert.True(t, b)
-	assert.Equal(t, s1, s)
-	s, b, e = Get("s5")
+	assert.Equal(t, s1, *s)
+	s, e = Get("s5")
 	assert.Nil(t, e)
-	assert.True(t, b)
-	assert.Equal(t, s2, s)
+	assert.Equal(t, s2, *s)
 
 	type args struct {
 		key string
@@ -95,26 +90,22 @@ func TestGetSet(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    string
-		exists  bool
+		want    *string
 		wantErr bool
 	}{
-		{"1", args{"s1", s2}, s1, true, false},
-		{"2", args{"noexists", s2}, "", false, false},
-		{"3", args{"hash", s2}, "", false, true},
+		{"1", args{"s1", s2}, &s1, false},
+		{"2", args{"noexists", s2}, nil, false},
+		{"3", args{"hash", s2}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetSet(tt.args.key, tt.args.val)
+			got, err := GetSet(tt.args.key, tt.args.val)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSet() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSet() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.exists {
-				t.Errorf("GetSet() exists = %v, want %v", got1, tt.exists)
 			}
 		})
 	}
@@ -127,9 +118,8 @@ func TestSetEX(t *testing.T) {
 
 	Set("s2", "hello")
 	SetEX("s2", "haha", 10000)
-	s, b, _ := Get("s2")
-	assert.True(t, b)
-	assert.Equal(t, "haha", s)
+	s, _ := Get("s2")
+	assert.Equal(t, "haha", *s)
 
 	type args struct {
 		key string
@@ -430,4 +420,50 @@ func TestGetRange(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMget(t *testing.T) {
+	values = make(map[string]expired)
+	Hset("hash", "f1", "1")
+	s1 := "hello"
+	Set("s1", s1)
+	s2 := "你好"
+	Set("s2", s2)
+	s3 := ""
+	Set("s3", s3)
+
+	type args struct {
+		keys []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*string
+	}{
+		{"1", args{[]string{"s1", "s2", "s3"}}, []*string{&s1, &s2, &s3}},
+		{"2", args{[]string{"noexist", "s2", "hash"}}, []*string{nil, &s2, nil}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Mget(tt.args.keys); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mget() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMset(t *testing.T) {
+	values = make(map[string]expired)
+	Hset("hash", "f1", "1")
+	Mset([]string{"s1", "s1", "s2", "s2", "s3", "s3", "hash", "hash"})
+	for i := 1; i < 4; i++ {
+		key := fmt.Sprintf("s%d", i)
+		value, err := Get(key)
+		assert.Nil(t, err)
+		assert.Equal(t, key, *value)
+	}
+
+	value, err := Get("hash")
+	assert.Nil(t, err)
+	assert.Equal(t, "hash", *value)
 }

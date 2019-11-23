@@ -47,6 +47,35 @@ func (s *stringVal) dataType() string {
 	return "string"
 }
 
+func (s *stringVal) getRange(start, end int) string {
+	l := len(s.val)
+	//check negative
+	if start < 0 {
+		start = l + start
+	}
+	if end < 0 {
+		end = l + end
+	}
+
+	if start > end || start > l-1 || end < 0 {
+		return ""
+	}
+
+	if start < 0 {
+		start = 0
+	}
+	if end > l-1 {
+		end = l - 1
+	}
+
+	rl := end - start + 1
+	if rl <= 0 {
+		return ""
+	}
+
+	return s.val[start : end+1]
+}
+
 func stringOf(key string) (*stringVal, error) {
 	v, ok := values[key]
 	if !ok || !v.isAlive() {
@@ -59,32 +88,33 @@ func stringOf(key string) (*stringVal, error) {
 	return str, nil
 }
 
-func Get(key string) (string, bool, error) {
+func Get(key string) (*string, error) {
 	str, err := stringOf(key)
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
+
 	if str == nil {
-		return "", false, nil
+		return nil, nil
 	}
-	return str.val, true, nil
+	return &str.val, nil
 }
 
 func Set(key, val string) {
 	values[key] = &stringVal{val: val, expireAt: -1}
 }
 
-func GetSet(key, val string) (string, bool, error) {
+func GetSet(key, val string) (*string, error) {
 	str, err := stringOf(key)
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 	if str == nil {
-		return "", false, nil
+		return nil, nil
 	}
 	old := str.val
 	str.val = val
-	return old, true, nil
+	return &old, nil
 }
 
 func SetEX(key, val string, ttl int) error {
@@ -203,37 +233,38 @@ func SetRange(key, val string, offset int) (int, error) {
 //
 //The function handles out of range requests by limiting the resulting range to the actual length of the string.
 func GetRange(key string, start, end int) (string, error) {
-	s, ok, err := Get(key)
+	str, err := stringOf(key)
 	if err != nil {
 		return "", err
 	}
-	if !ok {
+	if str == nil {
 		return "", nil
 	}
-	l := len(s)
+	return str.getRange(start, end), nil
+}
 
-	//check negative
-	if start < 0 {
-		start = l + start
+// Mget returns the values of all specified keys.
+// For every key that does not hold a string value or does not exist,
+// the special value nil is returned.
+// Because of this, the operation never fails.
+func Mget(keys []string) []*string {
+	if len(keys) == 0 {
+		return nil
 	}
-	if end < 0 {
-		end = l + end
+	ret := make([]*string, len(keys))
+	for i, k := range keys {
+		str, err := stringOf(k)
+		if err != nil || str == nil {
+			ret[i] = nil
+		} else {
+			ret[i] = &str.val
+		}
 	}
+	return ret
+}
 
-	if start > end || start > l-1 || end < 0 {
-		return "", nil
+func Mset(kvs []string) {
+	for i := 0; i < len(kvs); i = i + 2 {
+		Set(kvs[i], kvs[i+1])
 	}
-
-	if start < 0 {
-		start = 0
-	}
-	if end > l-1 {
-		end = l - 1
-	}
-
-	rl := end - start + 1
-	if rl <= 0 {
-		return "", nil
-	}
-	return s[start : end+1], nil
 }

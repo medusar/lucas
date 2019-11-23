@@ -100,12 +100,12 @@ var spopFunc = func(args []string, r *protocol.RedisConn) error {
 		count = i
 	}
 
-	removed, exist, err := store.Spop(args[0], count)
+	removed, err := store.Spop(args[0], count)
 	if err != nil {
 		return r.WriteError(err.Error())
 	}
-	if exist {
-		return r.WriteArray(toBulkArray(removed))
+	if removed != nil {
+		return r.WriteArray(toBulkArray(*removed))
 	} else {
 		return r.WriteNil()
 	}
