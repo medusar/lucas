@@ -99,6 +99,8 @@ func init() {
 	cmdFuncMap["append"] = appendFunc
 	cmdFuncMap["setrange"] = setRangeFunc
 	cmdFuncMap["getrange"] = getRangeFunc
+	cmdFuncMap["setbit"] = setbitFunc
+	cmdFuncMap["getbit"] = getbitFunc
 
 	//hash
 	cmdFuncMap["hset"] = hsetFunc

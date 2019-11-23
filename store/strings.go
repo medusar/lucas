@@ -8,7 +8,8 @@ import (
 
 const (
 	//Redis Strings are limited to 512 megabytes
-	MaxStringLength = 536870911
+	MaxStringLength = 536870911  //2^29-1
+	MaxBitOffset    = 4294967295 //2^32-1
 	//TODO:check string size
 )
 
@@ -74,6 +75,63 @@ func (s *stringVal) getRange(start, end int) string {
 	}
 
 	return s.val[start : end+1]
+}
+
+func (s *stringVal) setBit(offset, bit int) int {
+	byteIndex := (offset - 1) / 8
+
+	bytes := []byte(s.val)
+	if byteIndex > len(bytes)-1 {
+		totalBytes := byteIndex + 1
+		bytes = make([]byte, totalBytes)
+		copy(bytes, s.val)
+	}
+
+	i := int(bytes[byteIndex])
+	bitIndex := uint(7 - offset%8)
+	has := hasBit(i, bitIndex)
+	if bit == 1 {
+		i = setBit(i, bitIndex)
+	} else {
+		i = clearBit(i, bitIndex)
+	}
+	bytes[byteIndex] = byte(i)
+	s.val = string(bytes)
+
+	if has {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func (s *stringVal) getBit(offset int) int {
+	byteIndex := (offset - 1) / 8
+	bytes := []byte(s.val)
+	if byteIndex > len(bytes)-1 {
+		return 0
+	}
+	i := int(bytes[byteIndex])
+	bitIndex := uint(7 - offset%8)
+	has := hasBit(i, bitIndex)
+	if has {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func setBit(n int, pos uint) int {
+	n |= 1 << pos
+	return n
+}
+func clearBit(n int, pos uint) int {
+	mask := ^(1 << pos)
+	n &= mask
+	return n
+}
+func hasBit(n int, pos uint) bool {
+	return n&(1<<pos) > 0
 }
 
 func stringOf(key string) (*stringVal, error) {
@@ -267,4 +325,50 @@ func Mset(kvs []string) {
 	for i := 0; i < len(kvs); i = i + 2 {
 		Set(kvs[i], kvs[i+1])
 	}
+}
+
+// SetBit implements redis setbit commands.
+// https://redis.io/commands/setbit
+// Sets or clears the bit at offset in the string value stored at key.
+// The bit is either set or cleared depending on value, which can be either 0 or 1.
+// When key does not exist, a new string value is created.
+// The string is grown to make sure it can hold a bit at offset.
+// The offset argument is required to be greater than or equal to 0,
+// and smaller than 232 (this limits bitmaps to 512MB).
+// When the string at key is grown, added bits are set to 0.
+// Return the original bit value stored at offset.
+func SetBit(key string, offset, bit int) (int, error) {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if offset > MaxBitOffset {
+		return -1, fmt.Errorf("ERR offset is not an integer or out of range")
+	}
+	if bit != 1 && bit != 0 {
+		return -1, fmt.Errorf("ERR bit is not an integer or out of range")
+	}
+	if str == nil {
+		str = &stringVal{val: "", expireAt: -1}
+		values[key] = str
+	}
+	return str.setBit(offset, bit), nil
+}
+
+// GetBit returns the bit value at offset in the string value stored at key.
+// When offset is beyond the string length, the string is assumed to be a contiguous space with 0 bits.
+// When key does not exist it is assumed to be an empty string,
+// so offset is always out of range and the value is also assumed to be a contiguous space with 0 bits.
+func GetBit(key string, offset int) (int, error) {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if offset > MaxBitOffset {
+		return -1, fmt.Errorf("ERR offset is not an integer or out of range")
+	}
+	if str == nil {
+		return 0, nil
+	}
+	return str.getBit(offset), nil
 }

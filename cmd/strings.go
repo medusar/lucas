@@ -211,3 +211,41 @@ var decrByFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	return r.WriteInteger(v)
 }
+
+//https://redis.io/commands/setbit
+var setbitFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 2 {
+		return r.WriteError("ERR wrong number of arguments for 'setbit' command")
+	}
+	offset, e := strconv.Atoi(args[1])
+	if e != nil {
+		return r.WriteError("ERR offset is not an integer or out of range")
+	}
+	bit, e := strconv.Atoi(args[2])
+	if e != nil {
+		return r.WriteError("ERR bit is not an integer or out of range")
+	}
+	n, err := store.SetBit(args[0], offset, bit)
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//https://redis.io/commands/getbit
+var getbitFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 3 {
+		return r.WriteError("ERR wrong number of arguments for 'getbit' command")
+	}
+
+	offset, e := strconv.Atoi(args[1])
+	if e != nil {
+		return r.WriteError("ERR offset is not an integer or out of range")
+	}
+
+	n, err := store.GetBit(args[0], offset)
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}

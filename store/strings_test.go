@@ -467,3 +467,77 @@ func TestMset(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "hash", *value)
 }
+
+func TestSetBit(t *testing.T) {
+	values = make(map[string]expired)
+	Hset("hash", "f1", "1")
+
+	i, e := SetBit("s1", 0, 1)
+	assert.Nil(t, e)
+	assert.Equal(t, 0, i)
+	get, e := Get("s1")
+	assert.Nil(t, e)
+	assert.Equal(t, 1, len([]byte(*get)))
+
+	i, e = SetBit("s1", 0, 0)
+	assert.Nil(t, e)
+	assert.Equal(t, 1, i)
+	get, e = Get("s1")
+	assert.Nil(t, e)
+	assert.Equal(t, 1, len([]byte(*get)))
+
+	_, e = SetBit("hash", 0, 1)
+	assert.Error(t, e)
+
+	_, e = SetBit("s1", 0, 9)
+	assert.Error(t, e)
+
+	i, e = SetBit("s2", 15, 1)
+	assert.Nil(t, e)
+	assert.Equal(t, 0, i)
+	get, e = Get("s2")
+	assert.Nil(t, e)
+	assert.Equal(t, 2, len([]byte(*get)))
+
+	i, e = SetBit("s1", MaxBitOffset, 1)
+	assert.Nil(t, e)
+	assert.Equal(t, 0, i)
+	get, e = Get("s1")
+	assert.Nil(t, e)
+	assert.Equal(t, 536870912, len([]byte(*get)))
+}
+
+func TestGetBit(t *testing.T) {
+	values = make(map[string]expired)
+	Hset("hash", "f1", "1")
+
+	SetBit("s1", 10, 1)
+
+	type args struct {
+		key    string
+		offset int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"1", args{"noexist", 0}, 0, false},
+		{"2", args{"hash", 0}, -1, true},
+		{"3", args{"s1", 10}, 1, false},
+		{"3", args{"s1", 100}, 0, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBit(tt.args.key, tt.args.offset)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBit() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetBit() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
