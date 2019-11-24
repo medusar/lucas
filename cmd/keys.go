@@ -27,9 +27,8 @@ var expireFunc = func(args []string, r *protocol.RedisConn) error {
 	set := store.Expire(args[0], sec)
 	if set {
 		return r.WriteInteger(1)
-	} else {
-		return r.WriteInteger(0)
 	}
+	return r.WriteInteger(0)
 }
 
 var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
@@ -45,9 +44,8 @@ var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
 	set := store.ExpireAt(args[0], int64(timestamp))
 	if set {
 		return r.WriteInteger(1)
-	} else {
-		return r.WriteInteger(0)
 	}
+	return r.WriteInteger(0)
 }
 
 var keysFunc = func(args []string, r *protocol.RedisConn) error {
@@ -58,12 +56,7 @@ var keysFunc = func(args []string, r *protocol.RedisConn) error {
 	if keys == nil || len(keys) == 0 {
 		return r.WriteArray(nil)
 	}
-	resp := make([]*protocol.Resp, 0)
-	for _, k := range keys {
-		resp = append(resp, protocol.NewBulk(k))
-	}
-
-	return r.WriteArray(resp)
+	return r.WriteArray(toBulkArray(keys))
 }
 
 var existsFunc = func(args []string, r *protocol.RedisConn) error {

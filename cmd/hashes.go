@@ -166,11 +166,7 @@ var hvalsFunc = func(args []string, r *protocol.RedisConn) error {
 	if err != nil {
 		return r.WriteError(err.Error())
 	}
-	ret := make([]*protocol.Resp, len(vals))
-	for i := 0; i < len(vals); i++ {
-		ret[i] = protocol.NewBulk(vals[i])
-	}
-	return r.WriteArray(ret)
+	return r.WriteArray(toBulkArray(vals))
 }
 
 //https://redis.io/commands/hincrby

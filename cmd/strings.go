@@ -248,3 +248,12 @@ var getbitFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	return r.WriteInteger(n)
 }
+
+//TODO:
+//https://redis.io/commands/bitcount
+//https://redis.io/commands/bitfield
+//https://redis.io/commands/bitop
+//https://redis.io/commands/bitpos
+//https://redis.io/commands/incrbyfloat
+//https://redis.io/commands/msetnx
+//https://redis.io/commands/psetex
