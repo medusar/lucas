@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"log"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -162,7 +163,7 @@ func Test_scoreMemberMap_rangeByIndexWithScore(t *testing.T) {
 	sm.put(9, "03")
 	sm.put(9, "03")
 	log.Println(sm)
-	assert.ElementsMatch(t, sm.rangeByIndexWithScore(0, 1), []*ZsetMember{{"-100", -100}, {"1", 1}})
+	assert.ElementsMatch(t, sm.rangeByIndexWithScore(0, 1), []*zsetMember{{"-100", -100}, {"1", 1}})
 	assert.Nil(t, sm.rangeByIndexWithScore(-7, 0))
 }
 
@@ -202,4 +203,52 @@ func Test_scoreMemberMap_count1(t *testing.T) {
 	assert.Equal(t, sm.count(1000, 2000), 0)
 	assert.Equal(t, sm.count(7, 2), 0)
 	assert.Equal(t, sm.count(2, 9), 6)
+}
+
+func Test_scoreMemberMap_rank(t *testing.T) {
+
+	sm := new(scoreMemberMap)
+	assert.Equal(t, -1, sm.rank("nonono"))
+
+	for i := 0; i < 10; i++ {
+		sm.put(float64(i), strconv.Itoa(i))
+	}
+
+	for i := 0; i < 10; i++ {
+		rank := sm.rank(strconv.Itoa(i))
+		assert.NotNil(t, rank)
+		assert.Equal(t, i, rank)
+	}
+
+}
+
+func Test_scoreMemberMap_revrank(t *testing.T) {
+	type fields struct {
+		head *scoreMember
+		tail *scoreMember
+		size int
+	}
+	type args struct {
+		member string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   int
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := &scoreMemberMap{
+				head: tt.fields.head,
+				tail: tt.fields.tail,
+				size: tt.fields.size,
+			}
+			if got := sm.revrank(tt.args.member); got != tt.want {
+				t.Errorf("revrank() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

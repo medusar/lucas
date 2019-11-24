@@ -89,6 +89,7 @@ var zrangeFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/zrangebyscore
+//TODO:support flags
 var zrangeByScoreFunc = func(args []string, r *protocol.RedisConn) error {
 	if len(args) != 3 && len(args) != 4 {
 		return r.WriteError("ERR wrong number of arguments for 'zrangebyscore' command")
@@ -116,4 +117,57 @@ var zrangeByScoreFunc = func(args []string, r *protocol.RedisConn) error {
 		return r.WriteError(err.Error())
 	}
 	return r.WriteArray(toBulkArray(array))
+}
+
+var zrankFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 2 {
+		return r.WriteError("ERR wrong number of arguments for 'zrank' command")
+	}
+	rank, err := store.Zrank(args[0], args[1])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	if rank == nil {
+		return r.WriteNil()
+	}
+	return r.WriteInteger(*rank)
+}
+
+var zremFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) < 2 {
+		return r.WriteError("ERR wrong number of arguments for 'zrem' command")
+	}
+	n, err := store.Zrem(args[0], args[1:])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+var zscoreFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 2 {
+		return r.WriteError("ERR wrong number of arguments for 'zscore' command")
+	}
+	score, err := store.Zscore(args[0], args[1])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	if score == nil {
+		return r.WriteNil()
+	}
+	return r.WriteBulk(*score)
+}
+
+var zrevrankFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 2 {
+		return r.WriteError("ERR wrong number of arguments for 'zrevrank' command")
+	}
+	rank, err := store.Zrevrank(args[0], args[1])
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	if rank == nil {
+		return r.WriteNil()
+	}
+	return r.WriteInteger(*rank)
 }

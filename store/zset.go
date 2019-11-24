@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type ZsetMember struct {
+type zsetMember struct {
 	Member string
 	Score  float64
 }
@@ -45,6 +45,7 @@ func (sm *scoreMemberMap) String() string {
 	return sb
 }
 
+// remove the member associated with score
 func (sm *scoreMemberMap) remove(score float64, member string) bool {
 	cur := sm.tail
 	for cur != nil {
@@ -207,24 +208,50 @@ func (sm *scoreMemberMap) rangeByIndex(start, stop int) []string {
 	return ret
 }
 
-func (sm *scoreMemberMap) rangeByIndexWithScore(start, stop int) []*ZsetMember {
-	var ret []*ZsetMember
+func (sm *scoreMemberMap) rangeByIndexWithScore(start, stop int) []*zsetMember {
+	var ret []*zsetMember
 	sm.doRange(start, stop, func(score float64, member string) {
-		ret = append(ret, &ZsetMember{Member: member, Score: score})
+		ret = append(ret, &zsetMember{Member: member, Score: score})
 	})
 	return ret
 }
 
-func (sm *scoreMemberMap) rangeByScoreWithScore(min, max float64) []*ZsetMember {
-	var ret []*ZsetMember
+func (sm *scoreMemberMap) rangeByScoreWithScore(min, max float64) []*zsetMember {
+	var ret []*zsetMember
 	for cur := sm.head; cur != nil && cur.score <= max; cur = cur.next {
 		if cur.score >= min {
 			for _, m := range cur.members {
-				ret = append(ret, &ZsetMember{Member: m, Score: cur.score})
+				ret = append(ret, &zsetMember{Member: m, Score: cur.score})
 			}
 		}
 	}
 	return ret
+}
+
+func (sm *scoreMemberMap) rank(member string) int {
+	i := 0
+	for cur := sm.head; cur != nil; cur = cur.next {
+		for _, m := range cur.members {
+			if m == member {
+				return i
+			}
+			i++
+		}
+	}
+	return -1
+}
+
+func (sm *scoreMemberMap) revrank(member string) int {
+	n := 0
+	for cur := sm.tail; cur != nil; cur = cur.pre {
+		for i := len(cur.members) - 1; i >= 0; i-- {
+			if cur.members[i] == member {
+				return n
+			}
+			n++
+		}
+	}
+	return -1
 }
 
 type zsetVal struct {
@@ -319,6 +346,52 @@ func (s *zsetVal) rangeByScoreWithScore(min, max float64) []string {
 	return ret
 }
 
+func (s *zsetVal) rank(member string) *int {
+	_, exist := s.msMap[member]
+	if !exist {
+		return nil
+	}
+	i := s.smMap.rank(member)
+	if i < 0 {
+		panic("illegal state, rank is little than 0")
+	}
+	return &i
+}
+
+func (s *zsetVal) revrank(member string) *int {
+	_, exist := s.msMap[member]
+	if !exist {
+		return nil
+	}
+	i := s.smMap.revrank(member)
+	if i < 0 {
+		panic("illegal state, rank is little than 0")
+	}
+	return &i
+}
+
+func (s *zsetVal) remove(members []string) int {
+	n := 0
+	for _, m := range members {
+		score, exist := s.msMap[m]
+		if !exist {
+			continue
+		}
+		s.smMap.remove(score, m)
+		n++
+	}
+	return n
+}
+
+func (s *zsetVal) score(member string) *string {
+	score, exist := s.msMap[member]
+	if !exist {
+		return nil
+	}
+	scoreStr := fmt.Sprintf("%f", score)
+	return &scoreStr
+}
+
 func zsetOf(key string) (*zsetVal, error) {
 	z, ok := values[key]
 	if !ok || !z.isAlive() {
@@ -409,4 +482,48 @@ func ZRangeByScoreWithScore(key string, min, max float64) ([]string, error) {
 		return nil, nil
 	}
 	return zset.rangeByScoreWithScore(min, max), nil
+}
+
+func Zrank(key, member string) (*int, error) {
+	zset, err := zsetOf(key)
+	if err != nil {
+		return nil, err
+	}
+	if zset == nil {
+		return nil, nil
+	}
+	return zset.rank(member), nil
+}
+
+func Zrevrank(key, member string) (*int, error) {
+	zset, err := zsetOf(key)
+	if err != nil {
+		return nil, err
+	}
+	if zset == nil {
+		return nil, nil
+	}
+	return zset.revrank(member), nil
+}
+
+func Zrem(key string, members []string) (int, error) {
+	zset, err := zsetOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if zset == nil {
+		return 0, nil
+	}
+	return zset.remove(members), nil
+}
+
+func Zscore(key, member string) (*string, error) {
+	zset, err := zsetOf(key)
+	if err != nil {
+		return nil, err
+	}
+	if zset == nil {
+		return nil, nil
+	}
+	return zset.score(member), nil
 }
