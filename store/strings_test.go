@@ -337,6 +337,10 @@ func TestSetRange(t *testing.T) {
 	assert.Nil(t, e)
 	assert.Equal(t, newlen+15, n)
 
+	n, e = SetRange("hash", strNew, 15)
+	assert.NotNil(t, e)
+	assert.Equal(t, -1, n)
+
 	type args struct {
 		key    string
 		val    string
@@ -444,6 +448,7 @@ func TestMget(t *testing.T) {
 	}{
 		{"1", args{[]string{"s1", "s2", "s3"}}, []*string{&s1, &s2, &s3}},
 		{"2", args{[]string{"noexist", "s2", "hash"}}, []*string{nil, &s2, nil}},
+		{"3", args{[]string{}}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -507,6 +512,10 @@ func TestSetBit(t *testing.T) {
 	get, e = Get("s1")
 	assert.Nil(t, e)
 	assert.Equal(t, 536870912, len([]byte(*get)))
+
+	i, e = SetBit("111", MaxBitOffset+1, 1)
+	assert.NotNil(t, e)
+	assert.Equal(t, -1, i)
 }
 
 func TestGetBit(t *testing.T) {
@@ -528,7 +537,8 @@ func TestGetBit(t *testing.T) {
 		{"1", args{"noexist", 0}, 0, false},
 		{"2", args{"hash", 0}, -1, true},
 		{"3", args{"s1", 10}, 1, false},
-		{"3", args{"s1", 100}, 0, false},
+		{"4", args{"s1", 100}, 0, false},
+		{"5", args{"s1", MaxBitOffset + 1}, -1, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

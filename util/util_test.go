@@ -41,33 +41,6 @@ func TestAdd64(t *testing.T) {
 	}
 }
 
-func TestAdd64Float(t *testing.T) {
-	type args struct {
-		a float64
-		b float64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    float64
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := Add64Float(tt.args.a, tt.args.b)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Add64Float() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Add64Float() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestDiffArray(t *testing.T) {
 	type args struct {
 		a []string

@@ -399,7 +399,9 @@ func TestLset(t *testing.T) {
 		{"3", args{"list", -4, "0/-4"}, false},
 		{"4", args{"list", 0, "0/-4"}, false},
 		{"4", args{"list", 4, "0/-4"}, true},
-		{"4", args{"list", 3, "0/-4"}, false},
+		{"5", args{"list", 3, "0/-4"}, false},
+		{"6", args{"s1", 3, "0/-4"}, true},
+		{"7", args{"noexists", 3, "0/-4"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

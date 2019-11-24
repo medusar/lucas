@@ -37,11 +37,7 @@ func Add64(a, b int) (int, error) {
 	return a + b, nil
 }
 
-func Add64Float(a, b float64) (float64, error) {
-	//TODO: check float overflow
-	return a + b, nil
-}
-
+// DeleteStringArray deletes the ith string in array and returns the array after deleted
 func DeleteStringArray(i int, array []string) []string {
 	if i < len(array)-1 {
 		copy(array[i:], array[i+1:])
