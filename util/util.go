@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-var ErrOverFlow = errors.New("integer overflow")
+var errOverFlow = errors.New("integer overflow")
 
 //DiffArray returns the elements in `a` that aren't in `b`.
 func DiffArray(a, b []string) []string {
@@ -27,21 +27,17 @@ func DiffArray(a, b []string) []string {
 func Add64(a, b int) (int, error) {
 	if a > 0 {
 		if b > math.MaxInt64-a {
-			return -1, ErrOverFlow
+			return -1, errOverFlow
 		}
 	} else {
 		if b < math.MinInt64-a {
-			return -1, ErrOverFlow
+			return -1, errOverFlow
 		}
 	}
 	return a + b, nil
 }
 
-func Add64Float(a, b float64) (float64, error) {
-	//TODO: check float overflow
-	return a + b, nil
-}
-
+// DeleteStringArray deletes the ith string in array and returns the array after deleted
 func DeleteStringArray(i int, array []string) []string {
 	if i < len(array)-1 {
 		copy(array[i:], array[i+1:])

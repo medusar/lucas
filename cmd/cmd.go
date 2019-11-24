@@ -148,6 +148,17 @@ func init() {
 	cmdFuncMap["lpushx"] = lpushXFunc
 	cmdFuncMap["lrange"] = lrangeFunc
 
+	//zset
+	cmdFuncMap["zadd"] = zaddFunc
+	cmdFuncMap["zcard"] = zcardFunc
+	cmdFuncMap["zcount"] = zcountFunc
+	cmdFuncMap["zrange"] = zrangeFunc
+	cmdFuncMap["zrangebyscore"] = zrangeByScoreFunc
+	cmdFuncMap["zrank"] = zrankFunc
+	cmdFuncMap["zrem"] = zremFunc
+	cmdFuncMap["zscore"] = zscoreFunc
+	cmdFuncMap["zrevrank"] = zrevrankFunc
+
 	keys := make([]string, 0)
 	for key := range cmdFuncMap {
 		keys = append(keys, key)

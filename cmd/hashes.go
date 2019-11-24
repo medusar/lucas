@@ -36,9 +36,8 @@ var hgetFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	if exist {
 		return r.WriteBulk(v)
-	} else {
-		return r.WriteNil()
 	}
+	return r.WriteNil()
 }
 
 //https://redis.io/commands/hgetall

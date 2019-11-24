@@ -66,9 +66,8 @@ var setnxFunc = func(args []string, r *protocol.RedisConn) error {
 	key, val := args[0], args[1]
 	if set := store.SetNX(key, val); set {
 		return r.WriteInteger(1)
-	} else {
-		return r.WriteInteger(0)
 	}
+	return r.WriteInteger(0)
 }
 
 var setRangeFunc = func(args []string, r *protocol.RedisConn) error {

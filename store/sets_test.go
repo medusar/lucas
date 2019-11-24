@@ -1,11 +1,14 @@
 package store
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSadd(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+
 	type args struct {
 		key string
 		els []string
@@ -16,7 +19,10 @@ func TestSadd(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"set", []string{"1", "2"}}, 2, false},
+		{"2", args{"set1", []string{}}, 0, false},
+		{"3", args{"s1", []string{"12"}}, -1, true},
+		{"4", args{"set", []string{"1", "2", "3"}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -33,6 +39,10 @@ func TestSadd(t *testing.T) {
 }
 
 func TestScard(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+
 	type args struct {
 		key string
 	}
@@ -42,7 +52,9 @@ func TestScard(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"set"}, 3, false},
+		{"2", args{"s1"}, -1, true},
+		{"3", args{"noexists"}, 0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -59,6 +71,12 @@ func TestScard(t *testing.T) {
 }
 
 func TestSdiff(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		key  string
 		keys []string
@@ -69,7 +87,11 @@ func TestSdiff(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", []string{}}, nil, true},
+		{"2", args{"set", []string{}}, []string{"1", "2", "3"}, false},
+		{"3", args{"set", []string{"set1"}}, []string{"1"}, false},
+		{"4", args{"set1", []string{"set3"}}, []string{"2", "3"}, false},
+		{"5", args{"set1", []string{"set"}}, []string{}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -78,14 +100,18 @@ func TestSdiff(t *testing.T) {
 				t.Errorf("Sdiff() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Sdiff() = %v, want %v", got, tt.want)
-			}
+			assert.ElementsMatch(t, got, tt.want)
 		})
 	}
 }
 
 func TestSdiffStore(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		dest string
 		key  string
@@ -97,7 +123,11 @@ func TestSdiffStore(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"d1", "s1", []string{}}, -1, true},
+		{"2", args{"d2", "set", []string{}}, 3, false},
+		{"3", args{"d3", "set", []string{"set1"}}, 1, false},
+		{"4", args{"d4", "set1", []string{"set3"}}, 2, false},
+		{"5", args{"d5", "set1", []string{"set"}}, 0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,6 +144,12 @@ func TestSdiffStore(t *testing.T) {
 }
 
 func TestSinter(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		key  string
 		keys []string
@@ -124,7 +160,10 @@ func TestSinter(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", []string{"set1"}}, nil, true},
+		{"2", args{"set", []string{"set1"}}, []string{"2", "3"}, false},
+		{"3", args{"set", []string{"set3"}}, []string{}, false},
+		{"3", args{"set", []string{"set"}}, []string{"1", "2", "3"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -133,14 +172,18 @@ func TestSinter(t *testing.T) {
 				t.Errorf("Sinter() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Sinter() = %v, want %v", got, tt.want)
-			}
+			assert.ElementsMatch(t, got, tt.want)
 		})
 	}
 }
 
 func TestSinterStore(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		dest string
 		key  string
@@ -152,7 +195,11 @@ func TestSinterStore(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"d1", "set", []string{"s1", "set"}}, -1, true},
+		{"2", args{"d1", "s1", []string{"set"}}, -1, true},
+		{"3", args{"d1", "set", []string{"set1"}}, 2, false},
+		{"4", args{"d1", "noexists", []string{"set1"}}, 0, false},
+		{"5", args{"s1", "set", []string{"set1"}}, 2, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -169,6 +216,10 @@ func TestSinterStore(t *testing.T) {
 }
 
 func TestSmembers(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2"})
+
 	type args struct {
 		key string
 	}
@@ -178,7 +229,9 @@ func TestSmembers(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1"}, nil, true},
+		{"2", args{"set"}, []string{"1", "2"}, false},
+		{"3", args{"noexist"}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,14 +240,16 @@ func TestSmembers(t *testing.T) {
 				t.Errorf("Smembers() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Smembers() = %v, want %v", got, tt.want)
-			}
+			assert.ElementsMatch(t, got, tt.want)
 		})
 	}
 }
 
 func TestSismember(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2"})
+
 	type args struct {
 		key    string
 		member string
@@ -205,7 +260,11 @@ func TestSismember(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", "aaa"}, false, true},
+		{"2", args{"noexists", "aaa"}, false, false},
+		{"3", args{"set", "1"}, true, false},
+		{"4", args{"set", "2"}, true, false},
+		{"5", args{"set", "5"}, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -222,6 +281,10 @@ func TestSismember(t *testing.T) {
 }
 
 func TestSpop(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3", "4", "5"})
+
 	type args struct {
 		key   string
 		count int
@@ -229,10 +292,14 @@ func TestSpop(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *[]string
+		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", 1}, nil, true},
+		{"2", args{"noexists", 2}, nil, false},
+		{"3", args{"set", 2}, []string{"1", "2"}, false},
+		{"4", args{"set", -1}, nil, false},
+		{"5", args{"set", 0}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -241,14 +308,16 @@ func TestSpop(t *testing.T) {
 				t.Errorf("Spop() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Spop() got = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, len(got), len(tt.want))
 		})
 	}
 }
 
 func TestSrem(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3", "4", "5"})
+
 	type args struct {
 		key     string
 		members []string
@@ -259,7 +328,11 @@ func TestSrem(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", []string{"1212"}}, -1, true},
+		{"2", args{"noexists", []string{"1212"}}, 0, false},
+		{"3", args{"set", []string{"1212"}}, 0, false},
+		{"4", args{"set", []string{"3"}}, 1, false},
+		{"5", args{"set", []string{"4", "5"}}, 2, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -276,6 +349,12 @@ func TestSrem(t *testing.T) {
 }
 
 func TestSunion(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		keys []string
 	}
@@ -285,7 +364,11 @@ func TestSunion(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{[]string{"set"}}, []string{"1", "2", "3"}, false},
+		{"2", args{[]string{"s1"}}, nil, true},
+		{"3", args{[]string{"noexists", "set"}}, []string{"1", "2", "3"}, false},
+		{"4", args{[]string{"noexists", "set", "set1"}}, []string{"1", "2", "3"}, false},
+		{"4", args{[]string{"noexists", "set", "set1", "set3"}}, []string{"1", "2", "3", "4", "5", "6"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -294,14 +377,18 @@ func TestSunion(t *testing.T) {
 				t.Errorf("Sunion() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Sunion() = %v, want %v", got, tt.want)
-			}
+			assert.ElementsMatch(t, got, tt.want)
 		})
 	}
 }
 
 func TestSunionStore(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		dest string
 		key  string
@@ -313,7 +400,11 @@ func TestSunionStore(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"d1", "set", []string{"set"}}, 3, false},
+		{"2", args{"d2", "set", []string{"s1"}}, -1, true},
+		{"3", args{"d3", "set", []string{"noexists", "set"}}, 3, false},
+		{"4", args{"d4", "set", []string{"noexists", "set", "set1"}}, 3, false},
+		{"4", args{"d5", "set", []string{"noexists", "set", "set1", "set3"}}, 6, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -330,6 +421,12 @@ func TestSunionStore(t *testing.T) {
 }
 
 func TestSmove(t *testing.T) {
+	values = make(map[string]expired)
+	Set("s1", "hello")
+	Sadd("set", []string{"1", "2", "3"})
+	Sadd("set1", []string{"2", "3"})
+	Sadd("set3", []string{"4", "5", "6"})
+
 	type args struct {
 		source string
 		dest   string
@@ -341,7 +438,10 @@ func TestSmove(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"1", args{"s1", "set", "1"}, -1, true},
+		{"2", args{"set", "set", "1"}, 1, false},
+		{"3", args{"set1", "set", "2"}, 1, false},
+		{"4", args{"set1", "set3", "3"}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

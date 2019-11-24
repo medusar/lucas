@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	//Redis Strings are limited to 512 megabytes
-	MaxStringLength = 536870911  //2^29-1
-	MaxBitOffset    = 4294967295 //2^32-1
+	//MaxStringLength is the limit of bytes that a redis string can hold, it is limited to 512 megabytes
+	MaxStringLength = 536870911 //2^29-1
+	//MaxBitOffset is the max offset of bit operation
+	MaxBitOffset = 4294967295 //2^32-1
 	//TODO:check string size
 )
 
@@ -100,9 +101,8 @@ func (s *stringVal) setBit(offset, bit int) int {
 
 	if has {
 		return 1
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func (s *stringVal) getBit(offset int) int {
@@ -116,9 +116,8 @@ func (s *stringVal) getBit(offset int) int {
 	has := hasBit(i, bitIndex)
 	if has {
 		return 1
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func setBit(n int, pos uint) int {

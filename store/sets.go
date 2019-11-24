@@ -41,6 +41,30 @@ func (s *setVal) dataType() string {
 	return "set"
 }
 
+func setOf(key string) (*setVal, error) {
+	v, ok := values[key]
+	if !ok || !v.isAlive() {
+		return nil, nil
+	}
+	set, ok := v.(*setVal)
+	if !ok {
+		return nil, errorWrongType
+	}
+	return set, nil
+}
+
+func mapOf(key string) (map[string]*struct{}, error) {
+	v, ok := values[key]
+	if !ok || !v.isAlive() {
+		return nil, nil
+	}
+	s, ok := v.(*setVal)
+	if !ok {
+		return nil, errorWrongType
+	}
+	return s.val, nil
+}
+
 func Sadd(key string, els []string) (int, error) {
 	v, ok := values[key]
 	if !ok || !v.isAlive() {
@@ -68,27 +92,14 @@ func Sadd(key string, els []string) (int, error) {
 
 //Scard returns the cardinality (number of elements) of the set, or 0 if key does not exist.
 func Scard(key string) (int, error) {
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
+	set, err := setOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if set == nil {
 		return 0, nil
 	}
-	s, ok := v.(*setVal)
-	if !ok {
-		return -1, errorWrongType
-	}
-	return len(s.val), nil
-}
-
-func mapOf(key string) (map[string]*struct{}, error) {
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
-		return nil, nil
-	}
-	s, ok := v.(*setVal)
-	if !ok {
-		return nil, errorWrongType
-	}
-	return s.val, nil
+	return len(set.val), nil
 }
 
 //Sdiff returns the members of the set resulting from the difference between the first set and all the successive sets.
@@ -114,7 +125,7 @@ func Sdiff(key string, keys ...string) ([]string, error) {
 func SdiffStore(dest, key string, keys ...string) (int, error) {
 	set, err := Sdiff(key, keys...)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 	//remove
 	delete(values, dest)
@@ -173,17 +184,16 @@ func SinterStore(dest, key string, keys ...string) (int, error) {
 }
 
 func Smembers(key string) ([]string, error) {
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
+	set, err := setOf(key)
+	if err != nil {
+		return nil, err
+	}
+	if set == nil {
 		return nil, nil
 	}
-	s, ok := v.(*setVal)
-	if !ok {
-		return nil, errorWrongType
-	}
-	ret := make([]string, len(s.val))
+	ret := make([]string, len(set.val))
 	i := 0
-	for k := range s.val {
+	for k := range set.val {
 		ret[i] = k
 		i++
 	}
@@ -191,19 +201,18 @@ func Smembers(key string) ([]string, error) {
 }
 
 func Sismember(key, member string) (bool, error) {
-	v, ok := values[key]
-	if !ok || !v.isAlive() {
+	set, err := setOf(key)
+	if err != nil {
+		return false, err
+	}
+	if set == nil {
 		return false, nil
 	}
-	s, ok := v.(*setVal)
-	if !ok {
-		return false, errorWrongType
-	}
-	_, is := s.val[member]
+	_, is := set.val[member]
 	return is, nil
 }
 
-func Spop(key string, count int) (*[]string, error) {
+func Spop(key string, count int) ([]string, error) {
 	m, err := mapOf(key)
 	if err != nil {
 		return nil, err
@@ -212,7 +221,11 @@ func Spop(key string, count int) (*[]string, error) {
 		return nil, nil
 	}
 
-	r := make([]string, 0)
+	if count <= 0 {
+		return nil, nil
+	}
+
+	var r []string
 	i := 0
 	for k := range m {
 		if i >= count {
@@ -222,7 +235,7 @@ func Spop(key string, count int) (*[]string, error) {
 		r = append(r, k)
 		i++
 	}
-	return &r, nil
+	return r, nil
 }
 
 func Srem(key string, members []string) (int, error) {
