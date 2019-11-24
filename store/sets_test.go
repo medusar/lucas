@@ -229,7 +229,7 @@ func TestSpop(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *[]string
+		want    []string
 		wantErr bool
 	}{
 		// TODO: Add test cases.

@@ -104,7 +104,7 @@ var spopFunc = func(args []string, r *protocol.RedisConn) error {
 		return r.WriteError(err.Error())
 	}
 	if removed != nil {
-		return r.WriteArray(toBulkArray(*removed))
+		return r.WriteArray(toBulkArray(removed))
 	}
 	return r.WriteNil()
 }

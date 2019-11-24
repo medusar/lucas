@@ -203,7 +203,7 @@ func Sismember(key, member string) (bool, error) {
 	return is, nil
 }
 
-func Spop(key string, count int) (*[]string, error) {
+func Spop(key string, count int) ([]string, error) {
 	m, err := mapOf(key)
 	if err != nil {
 		return nil, err
@@ -222,7 +222,7 @@ func Spop(key string, count int) (*[]string, error) {
 		r = append(r, k)
 		i++
 	}
-	return &r, nil
+	return r, nil
 }
 
 func Srem(key string, members []string) (int, error) {
