@@ -182,7 +182,7 @@ var incrByFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(v)
 }
 
-var decrFun = func(args []string, r *protocol.RedisConn) error {
+var decrFunc = func(args []string, r *protocol.RedisConn) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'decr' command")
 	}

@@ -94,7 +94,7 @@ func init() {
 	cmdFuncMap["strlen"] = WithTime(strlenFunc)
 	cmdFuncMap["incr"] = WithTime(incrFunc)
 	cmdFuncMap["incrby"] = WithTime(incrByFunc)
-	cmdFuncMap["decr"] = decrFun
+	cmdFuncMap["decr"] = WitiTime(decrFunc)
 	cmdFuncMap["decrby"] = WithTime(decrByFunc)
 	cmdFuncMap["append"] = WithTime(appendFunc)
 	cmdFuncMap["setrange"] = WithTime(setRangeFunc)
