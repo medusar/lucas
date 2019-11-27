@@ -1,4 +1,4 @@
-package cmd
+package command
 
 import (
 	"bytes"
@@ -73,91 +73,92 @@ var commandFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 func init() {
-	cmdFuncMap["command"] = commandFunc
+	cmdFuncMap["command"] = WithTime(commandFunc)
 
 	//keys
-	cmdFuncMap["ttl"] = ttlFunc
-	cmdFuncMap["expire"] = expireFunc
-	cmdFuncMap["keys"] = keysFunc
-	cmdFuncMap["exists"] = existsFunc
-	cmdFuncMap["del"] = delFunc
-	cmdFuncMap["type"] = typeFunc
+	cmdFuncMap["ttl"] = WithTime(ttlFunc)
+	cmdFuncMap["expire"] = WithTime(expireFunc)
+	cmdFuncMap["keys"] = WithTime(keysFunc)
+	cmdFuncMap["exists"] = WithTime(existsFunc)
+	cmdFuncMap["del"] = WithTime(delFunc)
+	cmdFuncMap["type"] = WithTime(typeFunc)
 
 	//string
-	cmdFuncMap["get"] = getFunc
-	cmdFuncMap["set"] = setFunc
-	cmdFuncMap["getset"] = getsetFunc
-	cmdFuncMap["setex"] = setexFunc
-	cmdFuncMap["setnx"] = setnxFunc
-	cmdFuncMap["meget"] = mgetFunc
-	cmdFuncMap["mset"] = msetFunc
-	cmdFuncMap["strlen"] = strlenFunc
-	cmdFuncMap["incr"] = incrFunc
-	cmdFuncMap["incrby"] = incrByFunc
+	cmdFuncMap["get"] = WithTime(getFunc)
+	cmdFuncMap["set"] = WithTime(setFunc)
+	cmdFuncMap["getset"] = WithTime(getsetFunc)
+	cmdFuncMap["setex"] = WithTime(setexFunc)
+	cmdFuncMap["setnx"] = WithTime(setnxFunc)
+	cmdFuncMap["meget"] = WithTime(mgetFunc)
+	cmdFuncMap["mset"] = WithTime(msetFunc)
+	cmdFuncMap["strlen"] = WithTime(strlenFunc)
+	cmdFuncMap["incr"] = WithTime(incrFunc)
+	cmdFuncMap["incrby"] = WithTime(incrByFunc)
 	cmdFuncMap["decr"] = decrFun
-	cmdFuncMap["decrby"] = decrByFunc
-	cmdFuncMap["append"] = appendFunc
-	cmdFuncMap["setrange"] = setRangeFunc
-	cmdFuncMap["getrange"] = getRangeFunc
-	cmdFuncMap["setbit"] = setbitFunc
-	cmdFuncMap["getbit"] = getbitFunc
+	cmdFuncMap["decrby"] = WithTime(decrByFunc)
+	cmdFuncMap["append"] = WithTime(appendFunc)
+	cmdFuncMap["setrange"] = WithTime(setRangeFunc)
+	cmdFuncMap["getrange"] = WithTime(getRangeFunc)
+	cmdFuncMap["setbit"] = WithTime(setbitFunc)
+	cmdFuncMap["getbit"] = WithTime(getbitFunc)
+	cmdFuncMap["bitcount"] = WithTime(bitcountFunc)
 
 	//hash
-	cmdFuncMap["hset"] = hsetFunc
-	cmdFuncMap["hget"] = hgetFunc
-	cmdFuncMap["hgetall"] = hgetAllFunc
-	cmdFuncMap["hkeys"] = hkeysFunc
-	cmdFuncMap["hlen"] = hlenFunc
-	cmdFuncMap["hexists"] = hexistsFunc
-	cmdFuncMap["hdel"] = hdelFunc
-	cmdFuncMap["hmget"] = hmgetFunc
-	cmdFuncMap["hmset"] = hmsetFunc
-	cmdFuncMap["hsetnx"] = hsetnxFunc
-	cmdFuncMap["hstrlen"] = hstrlenFunc
-	cmdFuncMap["hvals"] = hvalsFunc
-	cmdFuncMap["hincrby"] = hincrByFunc
+	cmdFuncMap["hset"] = WithTime(hsetFunc)
+	cmdFuncMap["hget"] = WithTime(hgetFunc)
+	cmdFuncMap["hgetall"] = WithTime(hgetAllFunc)
+	cmdFuncMap["hkeys"] = WithTime(hkeysFunc)
+	cmdFuncMap["hlen"] = WithTime(hlenFunc)
+	cmdFuncMap["hexists"] = WithTime(hexistsFunc)
+	cmdFuncMap["hdel"] = WithTime(hdelFunc)
+	cmdFuncMap["hmget"] = WithTime(hmgetFunc)
+	cmdFuncMap["hmset"] = WithTime(hmsetFunc)
+	cmdFuncMap["hsetnx"] = WithTime(hsetnxFunc)
+	cmdFuncMap["hstrlen"] = WithTime(hstrlenFunc)
+	cmdFuncMap["hvals"] = WithTime(hvalsFunc)
+	cmdFuncMap["hincrby"] = WithTime(hincrByFunc)
 	cmdFuncMap["hincrbyfloat"] = hincrByFloatFunc
 	//HSCAN
-	//cmdFuncMap["hscan"] = hcanFunc
+	//cmdFuncMap["hscan"] = WithTime(hcanFunc)
 
 	//set
-	cmdFuncMap["sadd"] = saddFunc
-	cmdFuncMap["scard"] = scardFunc
+	cmdFuncMap["sadd"] = WithTime(saddFunc)
+	cmdFuncMap["scard"] = WithTime(scardFunc)
 	cmdFuncMap["sdiff"] = sdiffFunc
 	cmdFuncMap["sdiffstore"] = sdiffStoreFunc
-	cmdFuncMap["sinter"] = sinterFunc
-	cmdFuncMap["sinterstore"] = sinterStoreFunc
-	cmdFuncMap["sismember"] = sismemberFunc
-	cmdFuncMap["smembers"] = smembersFunc
-	cmdFuncMap["smove"] = smoveFunc
-	cmdFuncMap["spop"] = spopFunc
-	cmdFuncMap["srem"] = sremFunc
-	cmdFuncMap["sunion"] = sunionFunc
-	cmdFuncMap["sunionstore"] = sunionStoreFunc
+	cmdFuncMap["sinter"] = WithTime(sinterFunc)
+	cmdFuncMap["sinterstore"] = WithTime(sinterStoreFunc)
+	cmdFuncMap["sismember"] = WithTime(sismemberFunc)
+	cmdFuncMap["smembers"] = WithTime(smembersFunc)
+	cmdFuncMap["smove"] = WithTime(smoveFunc)
+	cmdFuncMap["spop"] = WithTime(spopFunc)
+	cmdFuncMap["srem"] = WithTime(sremFunc)
+	cmdFuncMap["sunion"] = WithTime(sunionFunc)
+	cmdFuncMap["sunionstore"] = WithTime(sunionStoreFunc)
 
 	//list
-	cmdFuncMap["lpush"] = lpushFunc
-	cmdFuncMap["rpush"] = rpushFunc
-	cmdFuncMap["llen"] = llenFunc
-	cmdFuncMap["lpop"] = lpopFunc
-	cmdFuncMap["rpop"] = rpopFunc
-	cmdFuncMap["lindex"] = lindexFunc
-	cmdFuncMap["lrem"] = lremFunc
-	cmdFuncMap["lset"] = lsetFunc
-	cmdFuncMap["rpushx"] = rpushXFunc
-	cmdFuncMap["lpushx"] = lpushXFunc
-	cmdFuncMap["lrange"] = lrangeFunc
+	cmdFuncMap["lpush"] = WithTime(lpushFunc)
+	cmdFuncMap["rpush"] = WithTime(rpushFunc)
+	cmdFuncMap["llen"] = WithTime(llenFunc)
+	cmdFuncMap["lpop"] = WithTime(lpopFunc)
+	cmdFuncMap["rpop"] = WithTime(rpopFunc)
+	cmdFuncMap["lindex"] = WithTime(lindexFunc)
+	cmdFuncMap["lrem"] = WithTime(lremFunc)
+	cmdFuncMap["lset"] = WithTime(lsetFunc)
+	cmdFuncMap["rpushx"] = WithTime(rpushXFunc)
+	cmdFuncMap["lpushx"] = WithTime(lpushXFunc)
+	cmdFuncMap["lrange"] = WithTime(lrangeFunc)
 
 	//zset
-	cmdFuncMap["zadd"] = zaddFunc
-	cmdFuncMap["zcard"] = zcardFunc
-	cmdFuncMap["zcount"] = zcountFunc
-	cmdFuncMap["zrange"] = zrangeFunc
-	cmdFuncMap["zrangebyscore"] = zrangeByScoreFunc
-	cmdFuncMap["zrank"] = zrankFunc
-	cmdFuncMap["zrem"] = zremFunc
-	cmdFuncMap["zscore"] = zscoreFunc
-	cmdFuncMap["zrevrank"] = zrevrankFunc
+	cmdFuncMap["zadd"] = WithTime(zaddFunc)
+	cmdFuncMap["zcard"] = WithTime(zcardFunc)
+	cmdFuncMap["zcount"] = WithTime(zcountFunc)
+	cmdFuncMap["zrange"] = WithTime(zrangeFunc)
+	cmdFuncMap["zrangebyscore"] = WithTime(zrangeByScoreFunc)
+	cmdFuncMap["zrank"] = WithTime(zrankFunc)
+	cmdFuncMap["zrem"] = WithTime(zremFunc)
+	cmdFuncMap["zscore"] = WithTime(zscoreFunc)
+	cmdFuncMap["zrevrank"] = WithTime(zrevrankFunc)
 
 	keys := make([]string, 0)
 	for key := range cmdFuncMap {

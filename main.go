@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/medusar/lucas/cmd"
+	"github.com/medusar/lucas/command"
 	"github.com/medusar/lucas/protocol"
 	"log"
 	"net"
@@ -15,7 +15,7 @@ func main() {
 	defer l.Close()
 
 	//start server
-	go cmd.LoopAndInvoke()
+	go command.LoopAndInvoke()
 
 	for {
 		con, err := l.Accept()
@@ -35,14 +35,12 @@ func serve(con net.Conn) {
 			log.Println("Failed to read,", err)
 			break
 		}
-		redisCmd, err := cmd.ParseRequest(req)
+		redisCmd, err := command.ParseRequest(req)
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		log.Println(redisCmd)
-
-		err = cmd.Execute(r, redisCmd)
+		err = command.Execute(r, redisCmd)
 		if err != nil {
 			log.Println("Failecd to write", err)
 			break

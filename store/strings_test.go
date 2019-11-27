@@ -523,6 +523,9 @@ func TestGetBit(t *testing.T) {
 	Hset("hash", "f1", "1")
 
 	SetBit("s1", 10, 1)
+	SetBit("s1", 8, 1)
+	SetBit("s1", 7, 0)
+	SetBit("s1", 0, 1)
 
 	type args struct {
 		key    string
@@ -539,6 +542,9 @@ func TestGetBit(t *testing.T) {
 		{"3", args{"s1", 10}, 1, false},
 		{"4", args{"s1", 100}, 0, false},
 		{"5", args{"s1", MaxBitOffset + 1}, -1, true},
+		{"6", args{"s1", 8}, 1, false},
+		{"8", args{"s1", 0}, 1, false},
+		{"7", args{"s1", 7}, 0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -549,6 +555,58 @@ func TestGetBit(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetBit() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBitCount(t *testing.T) {
+	values = make(map[string]expired)
+	Hset("hash", "f1", "1")
+
+	for i := 0; i < 1000; i++ {
+		bit, err := SetBit("s1", i, 1)
+		assert.Nil(t, err)
+		assert.Equal(t, 0, bit)
+	}
+
+	for i := 100; i < 200; i++ {
+		var bit int
+		var err error
+		if i%2 == 0 {
+			bit, err = SetBit("s2", i, 1)
+		} else {
+			bit, err = SetBit("s2", i, 0)
+		}
+		assert.Nil(t, err)
+		assert.Equal(t, 0, bit)
+	}
+
+	type args struct {
+		key   string
+		start int
+		end   int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"1", args{"s1", 0, -1}, 1000, false},
+		{"2", args{"s2", 0, -1}, 50, false},
+		{"3", args{"hash", 0, -1}, -1, true},
+		{"4", args{"noexists", 0, -1}, 0, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := BitCount(tt.args.key, tt.args.start, tt.args.end)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("BitCount() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("BitCount() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
