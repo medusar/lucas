@@ -1,4 +1,4 @@
-package cmd
+package command
 
 import (
 	"github.com/medusar/lucas/protocol"
@@ -182,7 +182,7 @@ var incrByFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(v)
 }
 
-var decrFun = func(args []string, r *protocol.RedisConn) error {
+var decrFunc = func(args []string, r *protocol.RedisConn) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'decr' command")
 	}
@@ -213,7 +213,7 @@ var decrByFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/setbit
 var setbitFunc = func(args []string, r *protocol.RedisConn) error {
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'setbit' command")
 	}
 	offset, e := strconv.Atoi(args[1])
@@ -233,7 +233,7 @@ var setbitFunc = func(args []string, r *protocol.RedisConn) error {
 
 //https://redis.io/commands/getbit
 var getbitFunc = func(args []string, r *protocol.RedisConn) error {
-	if len(args) != 3 {
+	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'getbit' command")
 	}
 
@@ -248,3 +248,38 @@ var getbitFunc = func(args []string, r *protocol.RedisConn) error {
 	}
 	return r.WriteInteger(n)
 }
+
+//https://redis.io/commands/bitcount
+var bitcountFunc = func(args []string, r *protocol.RedisConn) error {
+	if len(args) != 3 && len(args) != 1 {
+		return r.WriteError("ERR wrong number of arguments for 'bitcount' command")
+	}
+
+	start := 0
+	end := -1
+	var e error
+	if len(args) == 3 {
+		start, e = strconv.Atoi(args[1])
+		if e != nil {
+			return r.WriteError("ERR offset is not an integer or out of range")
+		}
+		end, e = strconv.Atoi(args[2])
+		if e != nil {
+			return r.WriteError("ERR offset is not an integer or out of range")
+		}
+	}
+
+	n, err := store.BitCount(args[0], start, end)
+	if err != nil {
+		return r.WriteError(err.Error())
+	}
+	return r.WriteInteger(n)
+}
+
+//TODO:
+//https://redis.io/commands/bitfield
+//https://redis.io/commands/bitop
+//https://redis.io/commands/bitpos
+//https://redis.io/commands/incrbyfloat
+//https://redis.io/commands/msetnx
+//https://redis.io/commands/psetex

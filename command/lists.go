@@ -1,4 +1,4 @@
-package cmd
+package command
 
 import (
 	"github.com/medusar/lucas/protocol"
@@ -179,3 +179,5 @@ var lrangeFunc = func(args []string, r *protocol.RedisConn) error {
 	array := toBulkArray(list)
 	return r.WriteArray(array)
 }
+
+//https://redis.io/commands/rpoplpush

@@ -79,7 +79,7 @@ func (s *stringVal) getRange(start, end int) string {
 }
 
 func (s *stringVal) setBit(offset, bit int) int {
-	byteIndex := (offset - 1) / 8
+	byteIndex := offset / 8
 
 	bytes := []byte(s.val)
 	if byteIndex > len(bytes)-1 {
@@ -90,6 +90,7 @@ func (s *stringVal) setBit(offset, bit int) int {
 
 	i := int(bytes[byteIndex])
 	bitIndex := uint(7 - offset%8)
+
 	has := hasBit(i, bitIndex)
 	if bit == 1 {
 		i = setBit(i, bitIndex)
@@ -106,7 +107,7 @@ func (s *stringVal) setBit(offset, bit int) int {
 }
 
 func (s *stringVal) getBit(offset int) int {
-	byteIndex := (offset - 1) / 8
+	byteIndex := offset / 8
 	bytes := []byte(s.val)
 	if byteIndex > len(bytes)-1 {
 		return 0
@@ -118,6 +119,50 @@ func (s *stringVal) getBit(offset int) int {
 		return 1
 	}
 	return 0
+}
+
+func (s *stringVal) countBit(start, end int) int {
+	l := len(s.val) * 8
+	//check negative
+	if start < 0 {
+		start = l + start
+	}
+	if end < 0 {
+		end = l + end
+	}
+	if start > end || start > l-1 || end < 0 {
+		return 0
+	}
+	if start < 0 {
+		start = 0
+	}
+	if end > l-1 {
+		end = l - 1
+	}
+
+	rl := end - start + 1
+	if rl <= 0 {
+		return 0
+	}
+
+	startB := start / 8
+	endB := end / 8
+
+	total := 0
+	for i := startB; i <= endB; i++ {
+		b := int(s.val[i])
+		for j := 0; j < 8; j++ {
+			offset := i*8 + j
+			if offset >= start && offset <= end {
+				if hasBit(b, uint(7-j)) {
+					total++
+				}
+			} else if offset > end {
+				break
+			}
+		}
+	}
+	return total
 }
 
 func setBit(n int, pos uint) int {
@@ -370,4 +415,15 @@ func GetBit(key string, offset int) (int, error) {
 		return 0, nil
 	}
 	return str.getBit(offset), nil
+}
+
+func BitCount(key string, start, end int) (int, error) {
+	str, err := stringOf(key)
+	if err != nil {
+		return -1, err
+	}
+	if str == nil {
+		return 0, nil
+	}
+	return str.countBit(start, end), nil
 }
