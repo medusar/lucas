@@ -5,6 +5,8 @@ import (
 	"github.com/medusar/lucas/protocol"
 	"log"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -13,6 +15,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer l.Close()
+
+	go http.ListenAndServe(":8080",http.DefaultServeMux)
 
 	//start server
 	go command.LoopAndInvoke()
