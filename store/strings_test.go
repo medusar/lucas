@@ -67,6 +67,12 @@ func TestSet(t *testing.T) {
 	assert.Equal(t, s1, *s)
 }
 
+func BenchmarkSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Set("setBenchKey", "value")
+	}
+}
+
 func TestGetSet(t *testing.T) {
 	values = make(map[string]expired)
 	Hset("hash", "f1", "1")
