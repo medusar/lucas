@@ -75,6 +75,9 @@ var commandFunc = func(args []string, r *protocol.RedisConn) error {
 func init() {
 	cmdFuncMap["command"] = WithTime(commandFunc)
 
+	//connection
+	cmdFuncMap["ping"] = pingFunc
+
 	//keys
 	cmdFuncMap["ttl"] = WithTime(ttlFunc)
 	cmdFuncMap["expire"] = WithTime(expireFunc)
