@@ -10,13 +10,13 @@ import (
 )
 
 func main() {
-	l, err := net.Listen("tcp", ":6380")
+	l, err := net.Listen("tcp", ":6379")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer l.Close()
 
-	go http.ListenAndServe(":8080",http.DefaultServeMux)
+	go http.ListenAndServe(":8080", http.DefaultServeMux)
 
 	//start server
 	go command.LoopAndInvoke()

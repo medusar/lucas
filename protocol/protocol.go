@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -35,10 +36,6 @@ func NewBulk(val string) *Resp {
 	return &Resp{Type: '$', Val: val, Nil: false}
 }
 
-func NewString(val string) *Resp {
-	return &Resp{Type: '+', Val: val, Nil: false}
-}
-
 //RedisConn represents a connection establish between client and server
 type RedisConn struct {
 	con net.Conn
@@ -54,17 +51,17 @@ func NewRedisConn(con net.Conn) *RedisConn {
 }
 
 func (r *RedisConn) Write(data [][]byte) error {
-	for i := range data {
-		if err := r.WriteBytes(data[i]); err != nil {
-			return err
-		}
+	if err := r.WriteBytes(data...); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (r *RedisConn) WriteBytes(data []byte) error {
-	if _, err := r.con.Write(data); err != nil {
-		return err
+func (r *RedisConn) WriteBytes(data ...[]byte) error {
+	for _, d := range data {
+		if _, err := r.con.Write(d); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -117,6 +114,15 @@ func (r *RedisConn) ReadByte() (byte, error) {
 	return b, nil
 }
 
+func (r *RedisConn) rewind(step int) error {
+	newIdx := r.readIndex - step
+	if newIdx < 0 {
+		return fmt.Errorf("failed to rewind read index for step:%d", step)
+	}
+	r.readIndex = newIdx
+	return nil
+}
+
 //ReadLine read data until a '\r\n` is found, return data before `\r\n`
 func (r *RedisConn) ReadLine() (string, error) {
 	b, err := r.readToCRLF()
@@ -128,13 +134,23 @@ func (r *RedisConn) ReadLine() (string, error) {
 
 //ReadInt read a int from the underlying connection
 func (r *RedisConn) ReadInt() (int, error) {
-	s, err := r.ReadLine()
-	if err != nil {
-		return 0, err
-	}
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, err
+	n := 0
+	for {
+		b, err := r.ReadByte()
+		if err != nil {
+			return n, err
+		}
+		if b != '\r' {
+			// Can't use int(b) here, because b is ascii, if you see an ASCII table this will become clear to you.
+			// Subtracting ASCII '0' (48 decimal) reduces 48 from the byte value.
+			n = n*10 + int(b-'0')
+			continue
+		}
+		_, err = r.ReadByte()
+		if err != nil {
+			return n, err
+		}
+		break
 	}
 	return n, nil
 }
@@ -150,13 +166,13 @@ func (r *RedisConn) ReadBulk() (*Resp, error) {
 		return &Resp{Type: '$', Nil: true}, nil
 	}
 
-	bs := make([]byte, 0)
+	bs := make([]byte, n)
 	for i := 0; i < n; i++ {
 		b, err := r.ReadByte()
 		if err != nil {
 			return nil, err
 		}
-		bs = append(bs, b)
+		bs[i] = b
 	}
 	//CRLF
 	for i := 0; i < 2; i++ {
@@ -175,13 +191,13 @@ func (r *RedisConn) ReadArray() ([]interface{}, error) {
 		return nil, err
 	}
 
-	ret := make([]interface{}, 0)
+	ret := make([]interface{}, n)
 	for i := 0; i < n; i++ {
 		rp, err := r.ReadReply()
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, rp)
+		ret[i] = rp
 	}
 	return ret, nil
 }
@@ -215,8 +231,13 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if b != '*' {
-		return nil, fmt.Errorf("illegal request, type:%c", b)
+		err = r.rewind(1)
+		if err != nil {
+			return nil, err
+		}
+		return r.ReadInlineRequest()
 	}
 
 	n, err := r.ReadInt()
@@ -224,7 +245,7 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 		return nil, err
 	}
 
-	ret := make([]string, 0)
+	ret := make([]string, n)
 	for i := 0; i < n; i++ {
 		b, err := r.ReadByte()
 		if err != nil {
@@ -247,55 +268,62 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 		if !ok {
 			return nil, fmt.Errorf("illegal request, bulk is not string")
 		}
-		ret = append(ret, v)
+		ret[i] = v
 	}
 
 	return ret, nil
 }
 
+func (r *RedisConn) ReadInlineRequest() ([]string, error) {
+	bytes := make([]byte, 0)
+	for {
+		b, err := r.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		if b != '\r' {
+			bytes = append(bytes, b)
+		} else {
+			bn, err := r.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+			if bn == '\n' {
+				break
+			}
+			bytes = append(bytes, b, bn)
+		}
+	}
+	s := string(bytes)
+	return strings.Split(s, " "), nil
+}
+
 func (r *RedisConn) WriteString(val string) error {
-	b := []byte("+")
-	b = append(b, []byte(val)...)
-	b = append(b, Delimiter...)
-	return r.WriteBytes(b)
+	return r.WriteBytes([]byte("+"), []byte(val), Delimiter)
 }
 
 func (r *RedisConn) WriteInteger(val int) error {
-	b := []byte(":")
-	b = append(b, []byte(strconv.Itoa(val))...)
-	b = append(b, Delimiter...)
-	return r.WriteBytes(b)
+	return r.WriteBytes([]byte(":"), []byte(strconv.Itoa(val)), Delimiter)
 }
 
 func (r *RedisConn) WriteBulk(val string) error {
-	b := []byte("$")
 	data := []byte(val)
-	b = append(b, []byte(strconv.Itoa(len(data)))...)
-	b = append(b, Delimiter...)
-	b = append(b, data...)
-	b = append(b, Delimiter...)
-	return r.WriteBytes(b)
+	return r.WriteBytes([]byte("$"), []byte(strconv.Itoa(len(data))), Delimiter, data, Delimiter)
 }
 
 func (r *RedisConn) WriteError(val string) error {
-	b := []byte("-")
-	b = append(b, []byte(val)...)
-	b = append(b, Delimiter...)
-	return r.WriteBytes(b)
+	return r.WriteBytes([]byte("-"), []byte(val), Delimiter)
 }
 
 func (r *RedisConn) WriteArray(val []*Resp) error {
-	b := []byte("*")
-	b = append(b, []byte(strconv.Itoa(len(val)))...)
-	b = append(b, Delimiter...)
-
-	err := r.WriteBytes(b)
+	err := r.WriteBytes([]byte("*"), []byte(strconv.Itoa(len(val))), Delimiter)
 	if err != nil {
 		return err
 	}
 
 	for _, v := range val {
-		switch v.Type {
+		t := v.Type
+		switch t {
 		case '+':
 			if s, ok := v.Val.(string); ok {
 				err = r.WriteString(s)
@@ -328,7 +356,7 @@ func (r *RedisConn) WriteArray(val []*Resp) error {
 			}
 			return fmt.Errorf("illegal simple array type")
 		default:
-			return fmt.Errorf("unknown type:%c", b)
+			return fmt.Errorf("unknown type:%c", t)
 		}
 
 		if err != nil {

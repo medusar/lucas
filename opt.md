@@ -29,3 +29,21 @@ Showing top 10 nodes out of 63
      0.18s  1.48% 93.90%      0.19s  1.57%  runtime.usleep
      0.09s  0.74% 94.65%      0.12s  0.99%  runtime.scanobject
 ```
+
+
+➜  lucas git:(basic) ✗ redis-benchmark -p 6379 -t set -n 10000000 -q
+SET: 68758.77 requests per second
+
+➜  lucas git:(basic) ✗ redis-benchmark -p 6379 -t set -n 10000000 -q
+SET: 72242.85 requests per second
+
+
+# lucas
+➜  lucas git:(basic) ✗ redis-benchmark -p 6379 -t ping -n 100000000 -q
+PING_INLINE: 71814.42 requests per second
+PING_BULK: 67604.06 requests per second
+
+# Redis Server
+➜  lucas git:(basic) ✗ redis-benchmark -p 6380 -t ping -n 1000000 -q
+PING_INLINE: 134970.98 requests per second
+PING_BULK: 132380.20 requests per second
