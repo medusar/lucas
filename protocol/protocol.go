@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -111,6 +112,15 @@ func (r *RedisConn) ReadByte() (byte, error) {
 	b := r.buf[r.readIndex]
 	r.readIndex = r.readIndex + 1
 	return b, nil
+}
+
+func (r *RedisConn) rewind(step int) error {
+	newIdx := r.readIndex - step
+	if newIdx < 0 {
+		return fmt.Errorf("failed to rewind read index for step:%d", step)
+	}
+	r.readIndex = newIdx
+	return nil
 }
 
 //ReadLine read data until a '\r\n` is found, return data before `\r\n`
@@ -221,8 +231,13 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if b != '*' {
-		return nil, fmt.Errorf("illegal request, type:%c", b)
+		err = r.rewind(1)
+		if err != nil {
+			return nil, err
+		}
+		return r.ReadInlineRequest()
 	}
 
 	n, err := r.ReadInt()
@@ -257,6 +272,30 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 	}
 
 	return ret, nil
+}
+
+func (r *RedisConn) ReadInlineRequest() ([]string, error) {
+	bytes := make([]byte, 0)
+	for {
+		b, err := r.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		if b != '\r' {
+			bytes = append(bytes, b)
+		} else {
+			bn, err := r.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+			if bn == '\n' {
+				break
+			}
+			bytes = append(bytes, b, bn)
+		}
+	}
+	s := string(bytes)
+	return strings.Split(s, " "), nil
 }
 
 func (r *RedisConn) WriteString(val string) error {
