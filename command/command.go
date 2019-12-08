@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/medusar/lucas/protocol"
-	"log"
-	"sort"
 	"strings"
 	"time"
 )
@@ -27,31 +25,6 @@ type RedisCmdInfo struct {
 	Step     int
 }
 
-//
-//func (r RedisCmdInfo) Encode() *protocol.RespArray {
-//	resp := &protocol.RespArray{
-//		Data: []protocol.RespData{
-//			&protocol.RespSimpleString{Data: r.Name},
-//			&protocol.RespInteger{Data: r.Arity},
-//			&protocol.RespArray{
-//				Data: encodeFlags(r.Flags),
-//			},
-//			&protocol.RespInteger{Data: r.FirstKey},
-//			&protocol.RespInteger{Data: r.LastKey},
-//			&protocol.RespInteger{Data: r.Step},
-//		},
-//	}
-//	return resp
-//}
-//
-//func encodeFlags(flags []string) []protocol.RespData {
-//	var resp []protocol.RespData
-//	for _, f := range flags {
-//		resp = append(resp, &protocol.RespSimpleString{Data: f})
-//	}
-//	return resp
-//}
-
 type RedisCmd struct {
 	Name string
 	Args []string
@@ -59,17 +32,17 @@ type RedisCmd struct {
 
 type invoker struct {
 	rc  *RedisCmd
-	con *protocol.RedisConn
+	con protocol.RedisRW
 }
 
-type cmdFunc func(args []string, r *protocol.RedisConn) error
+type cmdFunc func(args []string, r protocol.RedisRW) error
 
 var (
 	cmdFuncMap = make(map[string]cmdFunc)
 )
 
-var commandFunc = func(args []string, r *protocol.RedisConn) error {
-	return r.WriteString("OK") //TODO
+var commandFunc = func(args []string, r protocol.RedisRW) error {
+	return r.WriteString("OK") //TODO: implement COMMAND
 }
 
 func init() {
@@ -162,13 +135,6 @@ func init() {
 	cmdFuncMap["zrem"] = WithTime(zremFunc)
 	cmdFuncMap["zscore"] = WithTime(zscoreFunc)
 	cmdFuncMap["zrevrank"] = WithTime(zrevrankFunc)
-
-	keys := make([]string, 0)
-	for key := range cmdFuncMap {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	log.Printf("supported commands: %s \r\n", strings.Join(keys, ", "))
 }
 
 func LoopAndInvoke() {
@@ -182,7 +148,7 @@ func LoopAndInvoke() {
 	}
 }
 
-func Execute(r *protocol.RedisConn, c *RedisCmd) error {
+func Execute(r protocol.RedisRW, c *RedisCmd) error {
 	select {
 	case invokerChan <- &invoker{rc: c, con: r}:
 		return nil
@@ -213,7 +179,7 @@ func ParseRequest(reqs []string) (*RedisCmd, error) {
 	return &RedisCmd{Name: name}, nil
 }
 
-func execCmd(r *protocol.RedisConn, c *RedisCmd) error {
+func execCmd(r protocol.RedisRW, c *RedisCmd) error {
 	name := strings.ToLower(c.Name)
 	f, ok := cmdFuncMap[name]
 	if !ok {

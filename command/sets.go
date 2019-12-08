@@ -7,7 +7,7 @@ import (
 )
 
 //https://redis.io/commands/sadd
-var saddFunc = func(args []string, r *protocol.RedisConn) error {
+var saddFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'sadd' command")
 	}
@@ -19,7 +19,7 @@ var saddFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/scard
-var scardFunc = func(args []string, r *protocol.RedisConn) error {
+var scardFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'scard' command")
 	}
@@ -31,7 +31,7 @@ var scardFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sdiff
-var sdiffFunc = func(args []string, r *protocol.RedisConn) error {
+var sdiffFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 1 {
 		return r.WriteError("ERR wrong number of arguments for 'sdiff' command")
 	}
@@ -51,7 +51,7 @@ var sdiffFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/smembers
-var smembersFunc = func(args []string, r *protocol.RedisConn) error {
+var smembersFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'smembers' command")
 	}
@@ -67,7 +67,7 @@ var smembersFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sismember
-var sismemberFunc = func(args []string, r *protocol.RedisConn) error {
+var sismemberFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'sismember' command")
 	}
@@ -82,7 +82,7 @@ var sismemberFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/spop
-var spopFunc = func(args []string, r *protocol.RedisConn) error {
+var spopFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) > 2 || len(args) <= 0 {
 		return r.WriteError("ERR wrong number of arguments for 'spop' command")
 	}
@@ -110,7 +110,7 @@ var spopFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sdiffstore
-var sdiffStoreFunc = func(args []string, r *protocol.RedisConn) error {
+var sdiffStoreFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'sdiffstore' command")
 	}
@@ -131,7 +131,7 @@ var sdiffStoreFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sinter
-var sinterFunc = func(args []string, r *protocol.RedisConn) error {
+var sinterFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 1 {
 		return r.WriteError("ERR wrong number of arguments for 'sinter' command")
 	}
@@ -151,7 +151,7 @@ var sinterFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sinterstore
-var sinterStoreFunc = func(args []string, r *protocol.RedisConn) error {
+var sinterStoreFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'sinterstore' command")
 	}
@@ -171,7 +171,7 @@ var sinterStoreFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/srem
-var sremFunc = func(args []string, r *protocol.RedisConn) error {
+var sremFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'srem' command")
 	}
@@ -183,7 +183,7 @@ var sremFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sunion
-var sunionFunc = func(args []string, r *protocol.RedisConn) error {
+var sunionFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 1 {
 		return r.WriteError("ERR wrong number of arguments for 'sunion' command")
 	}
@@ -199,7 +199,7 @@ var sunionFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/sunionstore
-var sunionStoreFunc = func(args []string, r *protocol.RedisConn) error {
+var sunionStoreFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'sunionstore' command")
 	}
@@ -219,7 +219,7 @@ var sunionStoreFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/smove
-var smoveFunc = func(args []string, r *protocol.RedisConn) error {
+var smoveFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'smove' command")
 	}

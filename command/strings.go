@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-var getFunc = func(args []string, r *protocol.RedisConn) error {
+var getFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'get' command")
 	}
@@ -20,7 +20,7 @@ var getFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteBulk(*val)
 }
 
-var setFunc = func(args []string, r *protocol.RedisConn) error {
+var setFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'set' command")
 	}
@@ -28,7 +28,7 @@ var setFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteString("OK") //TODO:support NX, EX
 }
 
-var getsetFunc = func(args []string, r *protocol.RedisConn) error {
+var getsetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'getset' command")
 	}
@@ -42,7 +42,7 @@ var getsetFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteBulk(*val)
 }
 
-var setexFunc = func(args []string, r *protocol.RedisConn) error {
+var setexFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'setex' command")
 	}
@@ -59,7 +59,7 @@ var setexFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteString("OK")
 }
 
-var setnxFunc = func(args []string, r *protocol.RedisConn) error {
+var setnxFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'setnx' command")
 	}
@@ -70,7 +70,7 @@ var setnxFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(0)
 }
 
-var setRangeFunc = func(args []string, r *protocol.RedisConn) error {
+var setRangeFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'setrange' command")
 	}
@@ -86,7 +86,7 @@ var setRangeFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(l)
 }
 
-var getRangeFunc = func(args []string, r *protocol.RedisConn) error {
+var getRangeFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'getrange' command")
 	}
@@ -106,7 +106,7 @@ var getRangeFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteBulk(v)
 }
 
-var appendFunc = func(args []string, r *protocol.RedisConn) error {
+var appendFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'append' command")
 	}
@@ -117,7 +117,7 @@ var appendFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(l)
 }
 
-var mgetFunc = func(args []string, r *protocol.RedisConn) error {
+var mgetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) == 0 {
 		return r.WriteError("ERR wrong number of arguments for 'mget' command")
 	}
@@ -134,7 +134,7 @@ var mgetFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/mset
-var msetFunc = func(args []string, r *protocol.RedisConn) error {
+var msetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) == 0 || len(args)%2 != 0 {
 		return r.WriteError("ERR wrong number of arguments for 'mset' command")
 	}
@@ -142,7 +142,7 @@ var msetFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteString("OK")
 }
 
-var strlenFunc = func(args []string, r *protocol.RedisConn) error {
+var strlenFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'strlen' command")
 	}
@@ -153,7 +153,7 @@ var strlenFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(n)
 }
 
-var incrFunc = func(args []string, r *protocol.RedisConn) error {
+var incrFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'incr' command")
 	}
@@ -164,7 +164,7 @@ var incrFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(v)
 }
 
-var incrByFunc = func(args []string, r *protocol.RedisConn) error {
+var incrByFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'incrby' command")
 	}
@@ -182,7 +182,7 @@ var incrByFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(v)
 }
 
-var decrFunc = func(args []string, r *protocol.RedisConn) error {
+var decrFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'decr' command")
 	}
@@ -193,7 +193,7 @@ var decrFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(v)
 }
 
-var decrByFunc = func(args []string, r *protocol.RedisConn) error {
+var decrByFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'decrby' command")
 	}
@@ -212,7 +212,7 @@ var decrByFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/setbit
-var setbitFunc = func(args []string, r *protocol.RedisConn) error {
+var setbitFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'setbit' command")
 	}
@@ -232,7 +232,7 @@ var setbitFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/getbit
-var getbitFunc = func(args []string, r *protocol.RedisConn) error {
+var getbitFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'getbit' command")
 	}
@@ -250,7 +250,7 @@ var getbitFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/bitcount
-var bitcountFunc = func(args []string, r *protocol.RedisConn) error {
+var bitcountFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 && len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'bitcount' command")
 	}

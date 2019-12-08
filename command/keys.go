@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-var ttlFunc = func(args []string, r *protocol.RedisConn) error {
+var ttlFunc = func(args []string,r protocol.RedisRW) error {
 	var err error
 	if len(args) != 1 {
 		err = r.WriteError("ERR wrong number of arguments for 'ttl' command")
@@ -16,7 +16,7 @@ var ttlFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(ttl)
 }
 
-var expireFunc = func(args []string, r *protocol.RedisConn) error {
+var expireFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'expire' command")
 	}
@@ -31,7 +31,7 @@ var expireFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(0)
 }
 
-var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
+var expireAtFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'expire' command")
 	}
@@ -48,7 +48,7 @@ var expireAtFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(0)
 }
 
-var keysFunc = func(args []string, r *protocol.RedisConn) error {
+var keysFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'keys' command")
 	}
@@ -59,7 +59,7 @@ var keysFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteArray(toBulkArray(keys))
 }
 
-var existsFunc = func(args []string, r *protocol.RedisConn) error {
+var existsFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) == 0 {
 		return r.WriteError("ERR wrong number of arguments for 'exists' command")
 	}
@@ -74,7 +74,7 @@ var existsFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(total)
 }
 
-var delFunc = func(args []string, r *protocol.RedisConn) error {
+var delFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) == 0 {
 		return r.WriteError("ERR wrong number of arguments for 'del' command")
 	}
@@ -87,7 +87,7 @@ var delFunc = func(args []string, r *protocol.RedisConn) error {
 	return r.WriteInteger(total)
 }
 
-var typeFunc = func(args []string, r *protocol.RedisConn) error {
+var typeFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'type' command")
 	}
