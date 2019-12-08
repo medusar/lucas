@@ -2,7 +2,7 @@ package command
 
 import "github.com/medusar/lucas/protocol"
 
-var pingFunc = func(args []string, r *protocol.RedisConn) error {
+var pingFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 0 && len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'ping' command")
 	}

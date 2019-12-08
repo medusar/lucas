@@ -6,7 +6,7 @@ import (
 )
 
 // https://redis.io/commands/hset
-var hsetFunc = func(args []string, r *protocol.RedisConn) error {
+var hsetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 3 || len(args)%2 != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hset' command")
 	}
@@ -25,7 +25,7 @@ var hsetFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hget
-var hgetFunc = func(args []string, r *protocol.RedisConn) error {
+var hgetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hget' command")
 	}
@@ -41,7 +41,7 @@ var hgetFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hgetall
-var hgetAllFunc = func(args []string, r *protocol.RedisConn) error {
+var hgetAllFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hgetall' command")
 	}
@@ -57,7 +57,7 @@ var hgetAllFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hkeys
-var hkeysFunc = func(args []string, r *protocol.RedisConn) error {
+var hkeysFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hkeys' command")
 	}
@@ -73,7 +73,7 @@ var hkeysFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hlen
-var hlenFunc = func(args []string, r *protocol.RedisConn) error {
+var hlenFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hlen' command")
 	}
@@ -85,7 +85,7 @@ var hlenFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hexists
-var hexistsFunc = func(args []string, r *protocol.RedisConn) error {
+var hexistsFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hexists' command")
 	}
@@ -97,7 +97,7 @@ var hexistsFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hdel
-var hdelFunc = func(args []string, r *protocol.RedisConn) error {
+var hdelFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hdel' command")
 	}
@@ -109,7 +109,7 @@ var hdelFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hmget
-var hmgetFunc = func(args []string, r *protocol.RedisConn) error {
+var hmgetFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hmget' command")
 	}
@@ -129,12 +129,12 @@ var hmgetFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hmset
-var hmsetFunc = func(args []string, r *protocol.RedisConn) error {
+var hmsetFunc = func(args []string,r protocol.RedisRW) error {
 	return r.WriteError("ERR 'hmset' is considered deprecated, please use 'hset' instead")
 }
 
 //https://redis.io/commands/hsetnx
-var hsetnxFunc = func(args []string, r *protocol.RedisConn) error {
+var hsetnxFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hsetnx' command")
 	}
@@ -146,7 +146,7 @@ var hsetnxFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hstrlen
-var hstrlenFunc = func(args []string, r *protocol.RedisConn) error {
+var hstrlenFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'hstrlen' command")
 	}
@@ -158,7 +158,7 @@ var hstrlenFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hvals
-var hvalsFunc = func(args []string, r *protocol.RedisConn) error {
+var hvalsFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'hvals' command")
 	}
@@ -170,7 +170,7 @@ var hvalsFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hincrby
-var hincrByFunc = func(args []string, r *protocol.RedisConn) error {
+var hincrByFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hincrby' command")
 	}
@@ -182,7 +182,7 @@ var hincrByFunc = func(args []string, r *protocol.RedisConn) error {
 }
 
 //https://redis.io/commands/hincrbyfloat
-var hincrByFloatFunc = func(args []string, r *protocol.RedisConn) error {
+var hincrByFloatFunc = func(args []string,r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'hincrbyfloat' command")
 	}

@@ -32,7 +32,8 @@ func main() {
 
 func serve(con net.Conn) {
 	defer con.Close()
-	r := protocol.NewRedisConn(con)
+	//r := protocol.NewRedisConn(con)
+	r := protocol.NewBufRedisConn(con)
 	for {
 		req, err := r.ReadRequest()
 		if err != nil {

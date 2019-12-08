@@ -9,7 +9,7 @@ import (
 //WithTime will monitor the time a request costs,
 // if it costs more than 10 microseconds it will be added to the slow log log
 func WithTime(realFunc cmdFunc) cmdFunc {
-	return func(args []string, r *protocol.RedisConn) error {
+	return func(args []string, r protocol.RedisRW) error {
 		defer timeTrack(time.Now(), args)
 		return realFunc(args, r)
 	}

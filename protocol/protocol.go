@@ -1,7 +1,9 @@
 package protocol
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -9,6 +11,7 @@ import (
 
 var (
 	Delimiter = []byte("\r\n")
+	Nil       = []byte("$-1\r\n")
 )
 
 type Resp struct {
@@ -34,6 +37,27 @@ func NewNil() *Resp {
 
 func NewBulk(val string) *Resp {
 	return &Resp{Type: '$', Val: val, Nil: false}
+}
+
+type RedisRW interface {
+	ReadByte() (byte, error)
+	ReadLine() (string, error)
+	ReadInt() (int, error)
+	ReadBulk() (*Resp, error)
+	ReadArray() ([]interface{}, error)
+	ReadReply() (interface{}, error)
+	ReadRequest() ([]string, error)
+	ReadInlineRequest() ([]string, error)
+
+	WriteString(val string) error
+	WriteInteger(val int) error
+	WriteBulk(val string) error
+	WriteError(val string) error
+	WriteArray(val []*Resp) error
+	WriteNil() error
+
+	Close()
+	IsClosed() bool
 }
 
 //RedisConn represents a connection establish between client and server
@@ -378,4 +402,267 @@ func (r *RedisConn) IsClosed() bool {
 func (r *RedisConn) WriteNil() error {
 	b := []byte("$-1\r\n")
 	return r.WriteBytes(b)
+}
+
+type BufRedisConn struct {
+	con    net.Conn
+	reader *bufio.Reader
+	writer *bufio.Writer
+	closed bool
+}
+
+func (c *BufRedisConn) Write(data [][]byte) error {
+	for i := range data {
+		if _, err := c.writer.Write(data[i]); err != nil {
+			return err
+		}
+	}
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) writeBytes(data ...[]byte) error {
+	for i := range data {
+		if _, err := c.writer.Write(data[i]); err != nil {
+			return err
+		}
+	}
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) ReadByte() (byte, error) {
+	return c.reader.ReadByte()
+}
+
+func (c *BufRedisConn) ReadLine() (string, error) {
+	bytes, err := c.reader.ReadBytes('\r')
+	if err != nil {
+		return "", err
+	}
+	//_, err = c.reader.ReadByte() //read next '\n'
+	//if err != nil {
+	//	return "", err
+	//}
+	c.reader.Discard(1)
+	l := len(bytes)
+	return string(bytes[:l-1]), nil
+}
+
+func (c *BufRedisConn) ReadInt() (int, error) {
+	bytes, err := c.reader.ReadBytes('\r')
+	if err != nil {
+		return -1, err
+	}
+	c.reader.Discard(1)
+	n := 0
+	for i := 0; i < len(bytes)-1; i++ {
+		n = n*10 + int(bytes[i]-'0')
+	}
+	return n, nil
+}
+
+func (c *BufRedisConn) ReadBulk() (*Resp, error) {
+	n, err := c.ReadInt()
+	if err != nil {
+		return nil, err
+	}
+	if n == -1 {
+		return &Resp{Type: '$', Nil: true}, nil
+	}
+
+	buf := make([]byte, n)
+	_, err = io.ReadFull(c.reader, buf)
+	if err != nil {
+		return nil, err
+	}
+	c.reader.Discard(2)
+	return &Resp{Type: '$', Val: string(buf), Nil: false}, nil
+}
+
+func (c *BufRedisConn) ReadArray() ([]interface{}, error) {
+	n, err := c.ReadInt()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]interface{}, n)
+	for i := 0; i < n; i++ {
+		rp, err := c.ReadReply()
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = rp
+	}
+	return ret, nil
+}
+
+func (c *BufRedisConn) ReadReply() (interface{}, error) {
+	b, err := c.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+
+	switch b {
+	case '+':
+		return c.ReadLine()
+	case '-':
+		return c.ReadLine()
+	case ':':
+		return c.ReadInt()
+	case '$':
+		return c.ReadBulk()
+	case '*':
+		return c.ReadArray()
+	default:
+		return nil, fmt.Errorf("unknown type:%c", b)
+	}
+}
+
+func (c *BufRedisConn) ReadRequest() ([]string, error) {
+	bs, err := c.reader.Peek(1)
+	if err != nil {
+		return nil, err
+	}
+	if bs[0] != '*' {
+		return c.ReadInlineRequest()
+	}
+
+	c.reader.Discard(1) //discard bs[0]
+	n, err := c.ReadInt()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]string, n)
+	for i := 0; i < n; i++ {
+		b, err := c.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+
+		if b != '$' {
+			return nil, fmt.Errorf("illegal request, type:%c", b)
+		}
+
+		rp, err := c.ReadBulk()
+		if err != nil {
+			return nil, err
+		}
+		//request should not contain 'nil'
+		if rp.Nil == true {
+			return nil, fmt.Errorf("illegal request, should not contain nil")
+		}
+		v, ok := rp.Val.(string)
+		if !ok {
+			return nil, fmt.Errorf("illegal request, bulk is not string")
+		}
+		ret[i] = v
+	}
+
+	return ret, nil
+}
+
+func (c *BufRedisConn) ReadInlineRequest() ([]string, error) {
+	str, err := c.ReadLine()
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(str, " "), nil
+}
+
+func (c *BufRedisConn) WriteString(val string) error {
+	c.writeBytes([]byte("+"), []byte(val), Delimiter)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) WriteInteger(val int) error {
+	c.writeBytes([]byte(":"), []byte(strconv.Itoa(val)), Delimiter)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) WriteBulk(val string) error {
+	data := []byte(val)
+	c.writeBytes([]byte("$"), []byte(strconv.Itoa(len(data))), Delimiter, data, Delimiter)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) WriteError(val string) error {
+	c.writeBytes([]byte("-"), []byte(val), Delimiter)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) WriteNil() error {
+	c.writeBytes(Nil)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) WriteArray(val []*Resp) error {
+	c.writeArray(val)
+	return c.writer.Flush()
+}
+
+func (c *BufRedisConn) writeArray(val []*Resp) error {
+	err := c.writeBytes([]byte("*"), []byte(strconv.Itoa(len(val))), Delimiter)
+	if err != nil {
+		return err
+	}
+	for _, v := range val {
+		t := v.Type
+		switch t {
+		case '+':
+			if s, ok := v.Val.(string); ok {
+				err = c.writeBytes([]byte("+"), []byte(s), Delimiter)
+			} else {
+				return fmt.Errorf("illegal simple string type")
+			}
+		case '-':
+			if s, ok := v.Val.(string); ok {
+				err = c.writeBytes([]byte("+"), []byte(s), Delimiter)
+			} else {
+				return fmt.Errorf("illegal simple error type")
+			}
+		case ':':
+			if s, ok := v.Val.(int); ok {
+				err = c.writeBytes([]byte(":"), []byte(strconv.Itoa(s)), Delimiter)
+			} else {
+				return fmt.Errorf("illegal simple integer type")
+			}
+		case '$':
+			if v.Nil {
+				err = c.writeBytes(Nil)
+			} else if s, ok := v.Val.(string); ok {
+				data := []byte(s)
+				err = c.writeBytes([]byte("$"), []byte(strconv.Itoa(len(data))), Delimiter, data, Delimiter)
+			} else {
+				return fmt.Errorf("illegal simple bulk string type")
+			}
+		case '*':
+			if s, ok := v.Val.([]*Resp); ok {
+				err = c.writeArray(s)
+				if err != nil {
+					return err
+				}
+			}
+			return fmt.Errorf("illegal simple array type")
+		default:
+			return fmt.Errorf("unknown type:%c", t)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *BufRedisConn) Close() {
+	c.closed = true
+	c.con.Close()
+}
+
+func (c *BufRedisConn) IsClosed() bool {
+	return c.closed
+}
+
+func NewBufRedisConn(con net.Conn) *BufRedisConn {
+	return &BufRedisConn{con: con, reader: bufio.NewReader(con), writer: bufio.NewWriter(con)}
 }
