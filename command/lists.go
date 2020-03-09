@@ -7,7 +7,7 @@ import (
 )
 
 // https://redis.io/commands/lpush
-var lpushFunc = func(args []string,r protocol.RedisRW) error {
+var lpushFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'lpush' command")
 	}
@@ -19,7 +19,7 @@ var lpushFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/rpush
-var rpushFunc = func(args []string,r protocol.RedisRW) error {
+var rpushFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'rpush' command")
 	}
@@ -31,7 +31,7 @@ var rpushFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/llen
-var llenFunc = func(args []string,r protocol.RedisRW) error {
+var llenFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'llen' command")
 	}
@@ -43,7 +43,7 @@ var llenFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lpop
-var lpopFunc = func(args []string,r protocol.RedisRW) error {
+var lpopFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'lpop' command")
 	}
@@ -58,7 +58,7 @@ var lpopFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/rpop
-var rpopFunc = func(args []string,r protocol.RedisRW) error {
+var rpopFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 1 {
 		return r.WriteError("ERR wrong number of arguments for 'rpop' command")
 	}
@@ -73,7 +73,7 @@ var rpopFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lindex
-var lindexFunc = func(args []string,r protocol.RedisRW) error {
+var lindexFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 2 {
 		return r.WriteError("ERR wrong number of arguments for 'lindex' command")
 	}
@@ -94,7 +94,7 @@ var lindexFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lrem
-var lremFunc = func(args []string,r protocol.RedisRW) error {
+var lremFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'lrem' command")
 	}
@@ -113,7 +113,7 @@ var lremFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lset
-var lsetFunc = func(args []string,r protocol.RedisRW) error {
+var lsetFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'lrem' command")
 	}
@@ -132,7 +132,7 @@ var lsetFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/rpushx
-var rpushXFunc = func(args []string,r protocol.RedisRW) error {
+var rpushXFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'rpushx' command")
 	}
@@ -144,7 +144,7 @@ var rpushXFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lpushx
-var lpushXFunc = func(args []string,r protocol.RedisRW) error {
+var lpushXFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) < 2 {
 		return r.WriteError("ERR wrong number of arguments for 'lpushx' command")
 	}
@@ -156,7 +156,7 @@ var lpushXFunc = func(args []string,r protocol.RedisRW) error {
 }
 
 //https://redis.io/commands/lrange
-var lrangeFunc = func(args []string,r protocol.RedisRW) error {
+var lrangeFunc = func(args []string, r protocol.RedisRW) error {
 	if len(args) != 3 {
 		return r.WriteError("ERR wrong number of arguments for 'lrange' command")
 	}

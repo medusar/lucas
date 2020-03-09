@@ -50,6 +50,8 @@ func init() {
 
 	//connection
 	cmdFuncMap["ping"] = pingFunc
+	//quit for telnet
+	cmdFuncMap["quit"] = quitFunc
 
 	//keys
 	cmdFuncMap["ttl"] = WithTime(ttlFunc)

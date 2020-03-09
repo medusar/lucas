@@ -10,11 +10,12 @@ import (
 )
 
 func main() {
-	l, err := net.Listen("tcp", ":6379")
+	l, err := net.Listen("tcp", ":6380")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer l.Close()
+	log.Println("server stared on address:", l.Addr())
 
 	go http.ListenAndServe(":8080", http.DefaultServeMux)
 
@@ -36,14 +37,15 @@ func serve(con net.Conn) {
 	r := protocol.NewBufRedisConn(con)
 	for {
 		req, err := r.ReadRequest()
+		log.Println("req:", req)
 		if err != nil {
 			log.Println("Failed to read,", err)
 			break
 		}
 		redisCmd, err := command.ParseRequest(req)
 		if err != nil {
-			log.Println(err)
-			break
+			r.WriteError(err.Error())
+			continue
 		}
 		err = command.Execute(r, redisCmd)
 		if err != nil {

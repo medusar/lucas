@@ -12,3 +12,9 @@ var pingFunc = func(args []string, r protocol.RedisRW) error {
 	}
 	return r.WriteString("PONG")
 }
+
+var quitFunc = func(args []string, r protocol.RedisRW) error {
+	r.WriteString("OK")
+	r.Close() //TODO: will cause an error in reading. should find a better way.
+	return nil
+}

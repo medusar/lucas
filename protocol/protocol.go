@@ -299,27 +299,38 @@ func (r *RedisConn) ReadRequest() ([]string, error) {
 }
 
 func (r *RedisConn) ReadInlineRequest() ([]string, error) {
-	bytes := make([]byte, 0)
 	for {
-		b, err := r.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		if b != '\r' {
-			bytes = append(bytes, b)
-		} else {
-			bn, err := r.ReadByte()
+		bytes := make([]byte, 0)
+		for {
+			b, err := r.ReadByte()
 			if err != nil {
 				return nil, err
 			}
-			if bn == '\n' {
+			if b != '\n' && b != '\r' {
+				bytes = append(bytes, b)
+			} else if b == '\n' {
 				break
+			} else {
+				//\r\n
+				bn, err := r.ReadByte()
+				if err != nil {
+					return nil, err
+				}
+				if bn == '\n' {
+					break
+				}
+				bytes = append(bytes, b, bn)
 			}
-			bytes = append(bytes, b, bn)
 		}
+		if len(bytes) == 0 {
+			continue
+		}
+		s := strings.TrimSpace(string(bytes))
+		if s == "" {
+			continue
+		}
+		return strings.Fields(s), nil
 	}
-	s := string(bytes)
-	return strings.Split(s, " "), nil
 }
 
 func (r *RedisConn) WriteString(val string) error {
@@ -562,11 +573,30 @@ func (c *BufRedisConn) ReadRequest() ([]string, error) {
 }
 
 func (c *BufRedisConn) ReadInlineRequest() ([]string, error) {
-	str, err := c.ReadLine()
-	if err != nil {
-		return nil, err
+	for {
+		//support \r\n and \n in `netcat`
+		bytes, err := c.reader.ReadBytes('\n')
+		if err != nil {
+			return nil, err
+		}
+
+		//remove last `\n`
+		bytes = bytes[:len(bytes)-1]
+		//remove last `\r`
+		if l := len(bytes); l > 0 && bytes[l-1] == '\r' {
+			bytes = bytes[:l-1]
+		}
+
+		if len(bytes) == 0 {
+			continue
+		}
+		str := strings.TrimSpace(string(bytes))
+		//ignore empty blank
+		if str == "" {
+			continue
+		}
+		return strings.Fields(str), nil
 	}
-	return strings.Split(str, " "), nil
 }
 
 func (c *BufRedisConn) WriteString(val string) error {
