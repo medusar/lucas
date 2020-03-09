@@ -95,15 +95,15 @@ func init() {
 	cmdFuncMap["hstrlen"] = WithTime(hstrlenFunc)
 	cmdFuncMap["hvals"] = WithTime(hvalsFunc)
 	cmdFuncMap["hincrby"] = WithTime(hincrByFunc)
-	cmdFuncMap["hincrbyfloat"] = hincrByFloatFunc
+	cmdFuncMap["hincrbyfloat"] = WithTime(hincrByFloatFunc)
 	//HSCAN
 	//cmdFuncMap["hscan"] = WithTime(hcanFunc)
 
 	//set
 	cmdFuncMap["sadd"] = WithTime(saddFunc)
 	cmdFuncMap["scard"] = WithTime(scardFunc)
-	cmdFuncMap["sdiff"] = sdiffFunc
-	cmdFuncMap["sdiffstore"] = sdiffStoreFunc
+	cmdFuncMap["sdiff"] = WithTime(sdiffFunc)
+	cmdFuncMap["sdiffstore"] = WithTime(sdiffStoreFunc)
 	cmdFuncMap["sinter"] = WithTime(sinterFunc)
 	cmdFuncMap["sinterstore"] = WithTime(sinterStoreFunc)
 	cmdFuncMap["sismember"] = WithTime(sismemberFunc)
@@ -137,6 +137,10 @@ func init() {
 	cmdFuncMap["zrem"] = WithTime(zremFunc)
 	cmdFuncMap["zscore"] = WithTime(zscoreFunc)
 	cmdFuncMap["zrevrank"] = WithTime(zrevrankFunc)
+
+	//pubsub
+	cmdFuncMap["publish"] = WithTime(publishFunc)
+	cmdFuncMap["subscribe"] = WithTime(subscribeFunc)
 }
 
 func LoopAndInvoke() {
