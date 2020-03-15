@@ -7,9 +7,16 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"runtime"
 )
 
+func initEnv() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
+
 func main() {
+	initEnv()
+
 	l, err := net.Listen("tcp", ":6380")
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +44,7 @@ func serve(con net.Conn) {
 	defer r.Close()
 	for {
 		req, err := r.ReadRequest()
-		log.Println("req:", req)
+		//log.Println("req:", req)
 		if err != nil {
 			log.Println("Failed to read,", err)
 			break
