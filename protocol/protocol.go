@@ -39,6 +39,10 @@ func NewBulk(val string) *Resp {
 	return &Resp{Type: '$', Val: val, Nil: false}
 }
 
+func NewInt(val int) *Resp {
+	return &Resp{Type: ':', Val: val, Nil: false}
+}
+
 type RedisRW interface {
 	ReadByte() (byte, error)
 	ReadLine() (string, error)
@@ -58,16 +62,19 @@ type RedisRW interface {
 
 	Close()
 	IsClosed() bool
+	IsSubscriber() bool
+	SetSubscriber(subscriber bool)
 }
 
 //RedisConn represents a connection establish between client and server
 type RedisConn struct {
 	con net.Conn
 
-	buf       []byte
-	limit     int
-	readIndex int
-	closed    bool
+	buf        []byte
+	limit      int
+	readIndex  int
+	closed     bool
+	subscriber bool
 }
 
 func NewRedisConn(con net.Conn) *RedisConn {
@@ -415,11 +422,20 @@ func (r *RedisConn) WriteNil() error {
 	return r.WriteBytes(b)
 }
 
+func (r *RedisConn) IsSubscriber() bool {
+	return r.subscriber
+}
+
+func (r *RedisConn) SetSubscriber(subscriber bool) {
+	r.subscriber = subscriber
+}
+
 type BufRedisConn struct {
-	con    net.Conn
-	reader *bufio.Reader
-	writer *bufio.Writer
-	closed bool
+	con        net.Conn
+	reader     *bufio.Reader
+	writer     *bufio.Writer
+	closed     bool
+	subscriber bool
 }
 
 func (c *BufRedisConn) Write(data [][]byte) error {
@@ -691,6 +707,14 @@ func (c *BufRedisConn) Close() {
 
 func (c *BufRedisConn) IsClosed() bool {
 	return c.closed
+}
+
+func (c *BufRedisConn) IsSubscriber() bool {
+	return c.subscriber
+}
+
+func (c *BufRedisConn) SetSubscriber(subscriber bool) {
+	c.subscriber = subscriber
 }
 
 func NewBufRedisConn(con net.Conn) *BufRedisConn {
