@@ -19,3 +19,4 @@ A simple redis server written in go
 # Supported Command Types
 - [x] Normal redis commands
 - [x] [Inline redis commands](https://redis.io/topics/protocol)
+- [ ] Redis pipeline

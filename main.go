@@ -39,14 +39,11 @@ func main() {
 }
 
 func serve(con net.Conn) {
-	//r := protocol.NewRedisConn(con)
 	r := protocol.NewBufRedisConn(con)
 	defer r.Close()
 	for {
 		req, err := r.ReadRequest()
-		//log.Println("req:", req)
 		if err != nil {
-			log.Println("Failed to read,", err)
 			break
 		}
 		redisCmd, err := command.ParseRequest(req)
@@ -56,7 +53,6 @@ func serve(con net.Conn) {
 		}
 		err = command.Execute(r, redisCmd)
 		if err != nil {
-			log.Println("Failecd to write", err)
 			break
 		}
 	}
